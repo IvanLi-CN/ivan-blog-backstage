@@ -1,0 +1,99 @@
+<ng-template #tplContent>
+  <h3>平台信息</h3>
+  <form class="editor" nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm($event)">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>平台名称</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="platformErrorTpl">
+        <input nz-input formControlName="platform" placeholder="请输入">
+        <ng-template #platformErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            平台名称不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>平台图片</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="imageUrlErrorTpl" nzExtra="建议图片尺寸为 170 × 170">
+        <app-image-uploader formControlName="imageUrl"></app-image-uploader>
+        <ng-template #imageUrlErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            平台图片不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>平台等级</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <nz-select style="width: 324px;" formControlName="platformLevel" nzAllowClear>
+          <nz-option *ngFor="let status of platformLevelService.getFilterData()" [nzValue]="status.value"
+                     [nzLabel]="status.text"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>平台状态</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <nz-select style="width: 324px;" formControlName="platformStatus" nzAllowClear>
+          <nz-option *ngFor="let status of platformStatusesService.getFilterData()" [nzValue]="status.value"
+                     [nzLabel]="status.text"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6">在线人数</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <input nz-input formControlName="OnlineNumber">
+      </nz-form-control>
+    </nz-form-item>
+    <!--<nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>平台地址</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="platformUrlErrorTpl">
+        <input nz-input formControlName="platformUrl" placeholder="请输入">
+        <ng-template #platformUrlErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            平台地址不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>-->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6">排序</nz-form-label>
+      <nz-form-control [nzSpan]="18" nzExtra="递增排序，数值越小，排名越靠前。">
+        <nz-input-number formControlName="priority" [nzMin]="1" [nzMax]="9999999999" [nzStep]="1"></nz-input-number>
+        <ng-template #priorityErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            排序不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6">平台说明</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <input nz-input formControlName="platformInstruction" placeholder="请输入">
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="editor-bottom">
+      <input type="submit" nz-button nzType="primary" value="确定"/>
+      <input type="reset" nz-button value="取消"/>
+    </nz-form-item>
+  </form>
+</ng-template>
+
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">＋ 新增
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">编辑</app-table-operation-button>

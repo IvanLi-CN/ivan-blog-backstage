@@ -1,0 +1,25 @@
+<button
+  nz-button
+  [nzType]="type === 'delete' ? 'danger' : 'default'"
+  *ngIf="type === 'confirm' || type === 'delete' else otherType"
+  nz-popconfirm nzTitle="你真得要执行这项操作吗？"
+  [nzLoading]="isLoading"
+  (nzOnConfirm)="handleDo()"
+  [disabled]="isDisabled"
+>
+  <ng-container *ngTemplateOutlet="content"></ng-container>
+</button>
+<ng-template #otherType>
+  <button
+    nz-button
+    [nzType]="type!"
+    [nzLoading]="isLoading"
+    (click)="handleDo()"
+    [disabled]="isDisabled"
+  >
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </button>
+</ng-template>
+<ng-template #content>
+  <ng-content></ng-content>
+</ng-template>

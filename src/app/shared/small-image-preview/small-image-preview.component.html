@@ -1,0 +1,17 @@
+<span *ngIf="!src" style="height: 2.5em; width: 4em; line-height: 2.5em; text-align: center; display: inline-block;">
+  请选择
+</span>
+<img
+  *ngIf="src"
+  [src]="src"
+  style="height: 2.5em; width: 4em; object-fit: contain;"
+  nz-popover
+  [nzContent]="content"
+  nzPlacement="right"
+  [nzMouseEnterDelay]=".5"
+  [nzMouseLeaveDelay]=".4"
+  [nzOverlayClassName]="'image-preview-wrapper'"
+>
+<ng-template #content>
+  <img *ngIf="src" [src]="src" style="max-height: 500px; max-width: 800px; object-fit: contain;">
+</ng-template>

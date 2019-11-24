@@ -1,0 +1,103 @@
+<ng-template #tplContent>
+  <section class="editor-padding">
+    <h3>层级信息</h3>
+    <form class="editor" nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm($event)">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6" nzRequired>层级名称</nz-form-label>
+        <nz-form-control [nzSpan]="18" [nzErrorTip]="nameErrorTpl">
+          <input nz-input formControlName="name" placeholder="请输入" />
+          <ng-template #nameErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              层级名称不能为空
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item> <!--层级名称-->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">层级描述</nz-form-label>
+        <nz-form-control [nzSpan]="18" [nzErrorTip]="descriptionErrorTpl">
+          <textarea nz-input formControlName="description" placeholder="请输入层级描述"></textarea>
+          <ng-template #descriptionErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              层级描述不能为空
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item> <!--层级描述-->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6" nzRequired>最高下注量</nz-form-label>
+        <nz-form-control [nzSpan]="18" [nzErrorTip]="maxBetAmountErrorTpl">
+          <nz-input-number
+            formControlName="maxBetAmount"
+            [nzMin]="0"
+            [nzStep]="1"
+            [nzPrecision]="0"
+          ></nz-input-number>
+          <ng-template #maxBetAmountErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              最高下注量不能为空
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item> <!--最高下注量-->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6" nzRequired >单笔出款上限</nz-form-label>
+        <nz-form-control [nzSpan]="18" [nzErrorTip]="upperLimitOfPaymentErrorTpl">
+          <nz-input-number
+            formControlName="upperLimitOfPayment"
+            [nzMin]="0"
+            [nzStep]="1"
+            [nzPrecision]="0"
+          ></nz-input-number>
+          <ng-template #upperLimitOfPaymentErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              单笔出款上限不能为空
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item> <!--单笔出款上限-->
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6" nzRequired >单笔出款下限</nz-form-label>
+        <nz-form-control [nzSpan]="18" [nzErrorTip]="lowerLimitOfPaymentErrorTpl">
+          <nz-input-number
+            formControlName="lowerLimitOfPayment"
+            [nzMin]="0"
+            [nzStep]="1"
+            [nzPrecision]="0"
+          ></nz-input-number>
+          <ng-template #lowerLimitOfPaymentErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              单笔出款下限不能为空
+            </ng-container>
+            <ng-container *ngIf="control.hasError('lte')">
+              单笔出款下限不得大于{{ control.getError('lte')?.ref }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item> <!--单笔出款下限-->
+      <nz-form-item class="editor-bottom">
+        <input type="submit" nz-button nzType="primary" [value]="isCreated ? '保存' : '修改'"/>
+        <input type="reset" nz-button value="取消"/>
+      </nz-form-item>
+    </form>
+  </section>
+</ng-template>
+
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">＋ 新增
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">编辑</app-table-operation-button>

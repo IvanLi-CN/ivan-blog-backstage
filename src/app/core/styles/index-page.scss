@@ -1,0 +1,188 @@
+.index-page {
+  display: block;
+  align-items: center;
+  overflow: hidden;
+  & > .filter {
+    form {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      .collapse-icon {
+        transition: 0.3s;
+      }
+      &.collapsed nz-form-item {
+        &:not(.operations) {
+          display: none;
+        }
+        &:nth-of-type(1),
+        &:nth-of-type(2) {
+          display: flex;
+        }
+        .collapse-icon {
+          transform: rotate(180deg);
+        }
+      }
+      @media (min-width: 1400px) {
+        grid-template-columns: repeat(8, 1fr);
+        &.collapsed nz-form-item {
+          &:nth-of-type(3) {
+            display: flex;
+          }
+        }
+      }
+      @media (min-width: 1600px) {
+        grid-template-columns: repeat(10, 1fr);
+        &.collapsed nz-form-item {
+          &:nth-of-type(4) {
+            display: flex;
+          }
+        }
+      }
+      flex-flow: row wrap;
+
+      nz-form-item {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        grid-column: span 2;
+        nz-form-label {
+          flex: none;
+        }
+        nz-form-control {
+          flex: auto;
+          width: 100%;
+        }
+      }
+    }
+
+    .operations {
+      grid-column: 5 / span 2;
+      @media (min-width: 1400px) {
+        grid-column: 7 / span 2;
+      }
+      @media (min-width: 1600px) {
+        grid-column: 9 / span 2;
+      }
+      grid-row: 1;
+      justify-self: flex-end;
+      align-items: center;
+      input[type=submit], input[type=reset] {
+        margin: auto 0 auto 10px;
+      }
+    }
+  }
+  &.modal > .filter {
+    form {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      .collapse-icon {
+        transition: 0.3s;
+      }
+      &.collapsed nz-form-item {
+        &:not(.operations) {
+          display: none;
+        }
+        &:nth-of-type(1),
+        &:nth-of-type(2) {
+          display: flex;
+        }
+        .collapse-icon {
+          transform: rotate(180deg);
+        }
+      }
+      flex-flow: row wrap;
+
+      nz-form-item {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        grid-column: span 2;
+        nz-form-label {
+          flex: none;
+        }
+        nz-form-control {
+          flex: auto;
+          width: 100%;
+        }
+      }
+    }
+
+    .operations {
+      grid-column: 5 / span 2;
+      @media (min-width: 1400px) {
+        grid-column: 7 / span 2;
+      }
+      @media (min-width: 1600px) {
+        grid-column: 9 / span 2;
+      }
+      grid-row: 1;
+      justify-self: flex-end;
+      align-items: center;
+      input[type=submit], input[type=reset] {
+        margin: auto 0 auto 10px;
+      }
+    }
+  }
+  & > .operations {
+    margin-top: 30px;
+    *:not(:first-child) {
+      margin-left: 10px;
+    }
+  }
+
+  nz-table {
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .pagiation-total {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    font-size: 14px;
+    font-family: PingFangSC-Regular;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+  }
+
+  .list-total {
+    margin: 20px 0;
+    font-style: normal;
+    color: #000000;
+    line-height: 22px;
+    span{
+      margin-right: 20px;
+    }
+  }
+  .index-table {
+    position: relative;
+    .table-horizontal-switch {
+      position: absolute;
+      right: 0;
+      left: 0;
+      z-index: 100;
+      top: 10px;
+      opacity: .7;
+      .direction {
+        display: block;
+        height: 14px;
+        width: 14px;
+        background-image: url('~/assets/images/icon/arrow.png');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: contain;
+        transition: 300ms;
+        &.reverse {
+          transform: rotate(180deg);
+        }
+      }
+      &>:first-child {
+        position: absolute;
+        left: 80px;
+      }
+      &>:last-child {
+        position: absolute;
+        right: 80px;
+      }
+    }
+  }
+}

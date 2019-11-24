@@ -1,0 +1,122 @@
+# This file was generated based on ".graphqlconfig". Do not edit manually.
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Account {
+  account: String!
+  createdAt: DateTime!
+  id: ID!
+  nick: String!
+  updatedAt: DateTime!
+}
+
+type AccountInfoDto {
+  account: String!
+  id: Float!
+  nick: String!
+  role: String!
+}
+
+type Article {
+  author: Account!
+  authorId: Float!
+  createdAt: DateTime!
+  htmlContent: String!
+  id: ID!
+  mdContent: String!
+  publishedAt: DateTime!
+  slug: String!
+  summary: String
+  tags: [Tag!]!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type BaseEntity {
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  createArticle(createArticleInput: CreateArticleInput!): Article!
+  createTag(createTagInput: CreateTagInput!): Tag!
+  memberLogin(account: String!, password: String!): Account!
+  registerAccount(registerAccountInput: RegisterAccountInput!): Account!
+  removeAccount(id: Int, ids: [Int!]): Boolean!
+  removeArticle(id: Int!): Boolean
+  removeTag(id: Int!): Boolean
+  updateAccount(id: Float!, updateAccountInput: UpdateAccountInput!): Account!
+  updateArticle(id: Int!, updateArticleInput: UpdateArticleInput!): Article
+  updateTag(id: Int!, updateTagInput: UpdateTagInput!): Tag
+}
+
+type Query {
+  accounts(account: String, nick: String, pageIndex: Int = 1, pageSize: Int = 10): [Account!]!
+  accountsCount(account: String, nick: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
+  count(pageIndex: Int = 1, pageSize: Int = 10, title: String): Int!
+  currAccount: AccountInfoDto!
+  getArticle(id: Int, slug: String, title: String): Article!
+  getArticles(pageIndex: Int = 1, pageSize: Int = 10, title: String): [Article!]!
+  getTag(id: Int, name: String): Tag!
+  getTags(name: String, pageIndex: Int = 1, pageSize: Int = 10): [Tag!]!
+}
+
+type Tag {
+  articles: [Article!]
+  id: ID!
+  isAvailable: Boolean!
+  isVisible: Boolean!
+  name: String!
+}
+
+input CreateArticleInput {
+  htmlContent: String
+  mdContent: String
+  publishedAt: DateTime
+  slug: String!
+  summary: String
+  tagIds: [Int!] = []
+  title: String!
+}
+
+input CreateTagInput {
+  isAvailable: Boolean = true
+  isVisible: Boolean = true
+  name: String!
+}
+
+input RegisterAccountInput {
+  account: String!
+  nick: String!
+  password: String!
+}
+
+input UpdateAccountInput {
+  account: String
+  nick: String
+  password: String
+}
+
+input UpdateArticleInput {
+  htmlContent: String
+  mdContent: String
+  publishedAt: DateTime
+  slug: String!
+  summary: String
+  tagIds: [Int!]
+  title: String
+}
+
+input UpdateTagInput {
+  isAvailable: Boolean = true
+  isVisible: Boolean = true
+  name: String!
+}
+
+
+"The javascript `Date` as string. Type represents date and time as the ISO Date string."
+scalar DateTime

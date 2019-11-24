@@ -1,0 +1,21 @@
+<span class="table-operation-button">
+  <ng-template #indicatorTemplate><i nz-icon type="loading" style="font-size: 1em;"></i> </ng-template>
+  <nz-spin [nzIndicator]="indicatorTemplate" [nzSpinning]="isSpinning">
+    <ng-container *ngIf="!isDisabled else disabled">
+      <a *ngIf="type === 'delete'" nz-popconfirm nzTitle="真的要执行这项操作?" (nzOnConfirm)="click()" [ngStyle]="style">
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+      </a>
+      <a *ngIf="type !== 'delete'" (click)="click()" [ngStyle]="style">
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+      </a>
+    </ng-container>
+    <ng-template #disabled>
+      <a style="color: #bbb; cursor: not-allowed">
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+      </a>
+    </ng-template>
+    <ng-template #content>
+      <ng-content></ng-content>
+    </ng-template>
+  </nz-spin>
+</span>

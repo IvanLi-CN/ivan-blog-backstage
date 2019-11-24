@@ -1,0 +1,4 @@
+<app-table-operation-button (doTask)="doTask($event)">
+  <ng-content></ng-content>
+</app-table-operation-button>
+<app-text-input-modal [(isVisible)]="isVisible" [title]="title" [oldValue]="oldValue" (submit)="onSubmit($event)"></app-text-input-modal>

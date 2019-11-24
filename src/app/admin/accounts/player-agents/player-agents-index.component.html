@@ -1,0 +1,107 @@
+<section class="index-page">
+  <section class="filter">
+    <form nz-form [formGroup]="filterForm" nzLayout="inline" (ngSubmit)="onSubmit($event)"
+          (reset)="resetFilter($event)">
+      <nz-form-item>
+        <nz-form-label>账号</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="username" placeholder="账号">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>昵称</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="nick" placeholder="昵称">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>状态</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="isActive" nzAllowClear>
+            <nz-option *ngFor="let status of activeStatusesService.getFilterData()" [nzValue]="status.value"
+                       [nzLabel]="status.text"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>时间</nz-form-label>
+        <nz-form-control>
+          <nz-range-picker style="width: 260px" formControlName="baseDateRange"></nz-range-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="operations">
+        <input type="submit" nz-button nzType="primary" value="查询"/>
+        <input type="reset" nz-button value="重置"/>
+      </nz-form-item>
+    </form>
+  </section>
+  <section class="operations">
+    <app-player-agent-editor [isCreated]="true" (needUpdateList)="refreshList()"></app-player-agent-editor>
+    <app-operation-button (doTask)="batchEnable($event)">批量启用</app-operation-button>
+    <app-operation-button (doTask)="batchDisable($event)">批量禁用</app-operation-button>
+    <app-operation-button (doTask)="collapseAll($event, true)">展开所有</app-operation-button>
+    <app-operation-button (doTask)="collapseAll($event, false)">收起所有</app-operation-button>
+  </section>
+  <section class="index-table">
+    <nz-table #indexListTable [nzData]="treeNodesList$ | async" [nzLoading]="isLoading">
+      <thead (nzSortChange)="sort($event)">
+      <tr>
+        <th nzShowCheckbox [nzSelections]="listOfSelection" [(nzChecked)]="isAllChecked"
+            [nzIndeterminate]="isIndeterminate" (nzCheckedChange)="checkAll($event)"></th>
+        <th>账号</th>
+        <th>昵称</th>
+        <th>用户总量</th>
+        <th>有效会员</th>
+        <th>用户今日新增量</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <ng-container *ngFor="let data of indexListTable.data">
+        <tr>
+          <td nzShowCheckbox [nzChecked]="getItemCheck(data)" (nzCheckedChange)="updateItemCheck(data, $event)"></td>
+          <td
+            [nzIndentSize]="data.level * 20"
+            [nzShowExpand]="!!data.children"
+            [(nzExpand)]="data.expand"
+            (nzExpandChange)="collapse(data, $event)"
+          >
+            {{ data.username }}
+          </td>
+          <td>{{ data.nick }}</td>
+          <td>
+            <a [routerLink]="['/accounts/members']" [queryParams]="{parentId: getItemId(data)}">
+            {{ data.totalPlayerCount }}</a>
+          </td>
+          <td>
+            <a [routerLink]="['/accounts/members']" [queryParams]="{parentId: getItemId(data)}">
+              {{ data.totalValidPlayerCount }}</a>
+            </td>
+          <td>
+            <a [routerLink]="['/accounts/members']" [queryParams]="{parentId: getItemId(data)}">
+              {{ data.todayPlayerCount }}
+              <app-up-or-down-indicator [currValue]="data.todayPlayerCount"
+                                        [lastValue]="data.yesterdayPlayerCount"></app-up-or-down-indicator>
+            </a>
+          </td>
+          <td>
+            <app-enum-perview [enumValue]="!!data.isActive" [enumService]="activeStatusesService"></app-enum-perview>
+          </td>
+          <td class="options">
+            <app-table-operations>
+              <app-player-agent-editor [listItem]="data" (needUpdateList)="refreshList()"></app-player-agent-editor>
+              <nz-divider nzType="vertical"></nz-divider>
+              <app-table-operation-button (doTask)="remove($event, data)" type="delete">删除</app-table-operation-button>
+            </app-table-operations>
+          </td>
+        </tr>
+      </ng-container>
+      <tr *ngFor="let data of indexListTable.data">
+
+
+      </tr>
+      </tbody>
+    </nz-table>
+  </section>
+</section>

@@ -1,0 +1,10 @@
+<nz-modal
+  [nzVisible]="isVisible"
+  (nzVisibleChange)="onVisibleChange($event)"
+  [nzTitle]="title"
+  (nzOnCancel)="handleCancel()"
+  (nzOnOk)="handleOk()"
+  [nzOkLoading]="isOkLoading"
+>
+  <input nz-input [(ngModel)]="value" />
+</nz-modal>

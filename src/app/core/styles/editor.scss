@@ -1,0 +1,18 @@
+form.editor {
+  padding: 20px;
+  justify-content: flex-start;
+  .editor-bottom{
+    margin: 60px 0 30px 0;
+    text-align: center;
+    input{
+      margin: 0 5px;
+    }
+  }
+  nz-form-item {
+    nz-form-control {
+      nz-input-number, nz-select {
+        width: 100%;
+      }
+    }
+  }
+}

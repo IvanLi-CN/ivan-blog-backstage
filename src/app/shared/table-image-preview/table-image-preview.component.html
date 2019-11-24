@@ -1,0 +1,16 @@
+<img
+  *ngIf="!isError"
+  [src]="src"
+  (error)="imgLoadError()"
+  style="height: 50px; width: 100px; object-fit: contain;"
+  nz-popover
+  [nzContent]="content"
+  nzPlacement="right"
+  [nzMouseEnterDelay]=".5"
+  [nzMouseLeaveDelay]=".4"
+  [nzOverlayClassName]="'image-preview-wrapper'"
+>
+<img *ngIf="isError" style="height: 50px; width: 100px; object-fit: contain;" src="../../../assets/images/img-placeholder.png">
+<ng-template #content>
+  <img [src]="src" style="max-height: 500px; max-width: 800px; object-fit: contain;">
+</ng-template>

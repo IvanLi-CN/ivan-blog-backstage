@@ -1,0 +1,39 @@
+<section class="index-page">
+  <section class="filter">
+    <form nz-form [formGroup]="filterForm" nzLayout="inline" (ngSubmit)="fetchMembers(true)"
+      (reset)="resetFilter()">
+      <nz-form-item>
+        <nz-form-label>会员账号</nz-form-label>
+        <nz-form-control>
+          <input style="width: 180px" nz-input formControlName="username" placeholder="会员账号">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="operations">
+        <input type="submit" nz-button nzType="primary" value="查询" />
+        <input type="reset" nz-button value="重置" />
+      </nz-form-item>
+    </form>
+  </section>
+  <nz-table #indexListTable nzShowSizeChanger [nzData]="records" [nzTotal]="totalCount" [nzFrontPagination]="false"
+    [(nzPageIndex)]="filter.current" [(nzPageSize)]="filter.take" (nzPageIndexChange)="fetchMembers()"
+    (nzPageSizeChange)="fetchMembers(true)">
+    <thead>
+      <tr>
+        <th nzShowCheckbox [nzIndeterminate]="isIndeterminate" (nzCheckedChange)="checkAll($event)"
+          [(nzChecked)]="isAllDisplayDataChecked" [nzIndeterminate]="isIndeterminate"
+          (nzCheckedChange)="checkAll($event)"></th>
+        <th>会员账号</th>
+        <th>真实姓名</th>
+        <th>余额</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let data of indexListTable.data">
+        <td nzShowCheckbox [nzChecked]="getItemCheck(data)" (nzCheckedChange)="updateItemCheck(data, $event)"></td>
+        <td>{{ data.username }}</td>
+        <td>{{ data.realName }}</td>
+        <td>{{ data.balance|number:'.2-2' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</section>

@@ -1,0 +1,29 @@
+<section nz-popover [nzTitle]="title" [nzTrigger]="trigger" [nzContent]="popoverContent">
+  <ng-content></ng-content>
+  <ng-template #popoverContent>
+    <div class="clearfix">
+      <nz-upload
+        [nzAction]="'/api/images/'"
+        nzListType="picture-card"
+        nzName="image"
+        (nzChange)="handleChange($event)"
+        [(nzFileList)]="fileList"
+        [nzShowButton]="fileList.length < imageCounts"
+        [nzShowUploadList]="showUploadList"
+        [nzRemove]="handleRemove"
+        [nzPreview]="handlePreview"
+
+      >
+        <!--[nzType]="loading ? 'loading' : 'plus'"-->
+        <i nz-icon nzType="plus"></i>
+        <div class="ant-upload-text">Upload</div>
+      </nz-upload>
+      <nz-modal [(nzVisible)]="previewVisible" [nzContent]="modalContent" [nzFooter]="null"
+        (nzOnCancel)="previewVisible = false">
+        <ng-template #modalContent>
+          <img [src]="previewImage2" [ngStyle]="{ width: '100%' }" />
+        </ng-template>
+      </nz-modal>
+    </div>
+  </ng-template>
+</section>

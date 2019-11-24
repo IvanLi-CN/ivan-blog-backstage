@@ -1,0 +1,16 @@
+<nz-select
+  (nzFocus)="onFocus($event)"
+  (nzOnSearch)="search($event)"
+  (nzScrollToBottom)="fetchMore()"
+  [(ngModel)]="value"
+  [nzFilterOption]="nzFilterOption"
+  [nzPlaceHolder]="'请输入' + placeholder || ''"
+  [nzLoading]="loading"
+  [nzMode]="nzMode"
+  (ngModelChange)="ngModelChange"
+  nzServerSearch
+  nzShowSearch
+  nzAllowClear
+>
+  <nz-option *ngFor="let option of options$ | async" [nzLabel]="option.label" [nzValue]="option.value"></nz-option>
+</nz-select>

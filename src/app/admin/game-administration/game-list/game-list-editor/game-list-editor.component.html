@@ -1,0 +1,135 @@
+<ng-template #tplContent>
+  <h3>游戏信息</h3>
+  <form class="editor" nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm($event)">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>所属平台</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="playStationIdErrorTpl">
+        <app-platform-selector formControlName="playStationId"></app-platform-selector>
+        <ng-template #playStationIdErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            游戏名称不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>所属类别</nz-form-label>
+      <nz-form-control [nzSpan]="18"  [nzErrorTip]="gameTypeIdErrorTpl">
+        <app-game-type-selector formControlName="gameTypeId"></app-game-type-selector>
+        <ng-template #gameTypeIdErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            所属类别不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>游戏名称</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="gameNameErrorTpl">
+        <input nz-input formControlName="gameName" placeholder="请输入">
+        <ng-template #gameNameErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            游戏名称不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>游戏地址</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="gameUrlErrorTpl">
+        <input nz-input formControlName="gameUrl" placeholder="请输入">
+        <ng-template #gameUrlErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            游戏地址不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>游戏图片</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="imageUrlErrorTpl" nzExtra="建议图片尺寸为 170 × 170">
+        <app-image-uploader formControlName="imageUrl"></app-image-uploader>
+        <ng-template #imageUrlErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            游戏图片不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+<!--    <nz-form-item>-->
+<!--      <nz-form-label [nzSpan]="6" nzRequired>返水倍数区间</nz-form-label>-->
+<!--      <nz-form-control [nzSpan]="18"  [nzErrorTip]="gameTypeIdErrorTpl">-->
+<!--        <nz-input-group nzCompact>-->
+<!--          <div nz-col nzSpan="11">-->
+<!--            <nz-input-number style="width: auto" formControlName="startBackWater" [nzMin]="0" [nzMax]="100"></nz-input-number>-->
+<!--          </div>-->
+<!--          <div nz-col nzSpan="2" style="text-align:center;">-</div>-->
+<!--          <div nz-col nzSpan="11">-->
+<!--            <nz-input-number style="width: auto" formControlName="endBackWater" [nzMin]="dataForm.value?.startBackWater || 0" [nzMax]="100"></nz-input-number>-->
+<!--          </div>-->
+<!--        </nz-input-group>-->
+<!--        <ng-template #gameTypeIdErrorTpl let-control>-->
+<!--          <ng-container *ngIf="control.hasError('server')">-->
+<!--            {{ control.errors.server }}-->
+<!--          </ng-container>-->
+<!--          <ng-container *ngIf="control.hasError('required')">-->
+<!--            返水倍数区间不能为空-->
+<!--          </ng-container>-->
+<!--        </ng-template>-->
+<!--      </nz-form-control>-->
+<!--    </nz-form-item>-->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" nzRequired>状态</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="isActiveErrorTpl">
+        <nz-select formControlName="isActive" nzAllowClear>
+          <nz-option *ngFor="let status of activeStatusesService.getFilterData()" [nzValue]="status.value"
+                     [nzLabel]="status.text"></nz-option>
+        </nz-select>
+        <ng-template #isActiveErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            状态不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label [nzSpan]="6" >排序</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="priorityErrorTpl" nzExtra="递增排序，数值越小，排名越靠前。">
+        <nz-input-number formControlName="priority" [nzMin]="1" [nzMax]="9999999999" [nzStep]="1"></nz-input-number>
+        <ng-template #priorityErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+          <ng-container *ngIf="control.hasError('required')">
+            排序不能为空
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="editor-bottom">
+      <input type="submit" nz-button nzType="primary" value="确定"/>
+      <input type="reset" nz-button value="取消"/>
+    </nz-form-item>
+  </form>
+</ng-template>
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">＋ 新增
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">编辑</app-table-operation-button>

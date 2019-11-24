@@ -1,0 +1,70 @@
+<nz-layout class="app-layout">
+  <nz-sider class="menu-sidebar" nzCollapsible nzWidth="256px" nzBreakpoint="md" [(nzCollapsed)]="isCollapsed"
+            [nzTrigger]="null">
+    <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed" class="menu">
+      <ng-container *ngFor="let item of visibleMenuItems$ | async">
+        <li *ngIf="!item.children || item.children.length === 0" nz-menu-item nz-tooltip nzPlacement="right"
+            [nzSelected]="'/' + $any(route.snapshot)._urlSegment.segments.join('/') === item.path">
+          <span title class="menu-title" (click)="goto(item)">
+            <img class="icon" [src]="'../../assets/images/icon/' + item.icon + '.png'" alt=""/>
+            <span *ngIf="!isCollapsed">{{ item.title }}</span>
+            <nz-badge *ngIf="$any(item).newsCount > 0 && !isCollapsed" [nzCount]="$any(item).newsCount"></nz-badge>
+          </span>
+        </li>
+        <li *ngIf="item.children && item.children.length > 0" nz-submenu>
+          <span title class="menu-title">
+            <img class="icon" [src]="'../../assets/images/icon/' + item.icon + '.png'" alt=""/>
+            <span *ngIf="!isCollapsed">{{ item.title }}</span>
+            <nz-badge *ngIf="$any(item).newsCount > 0 && !isCollapsed" [nzCount]="$any(item).newsCount"></nz-badge>
+          </span>
+          <ul>
+            <li nz-menu-item *ngFor="let subItem of $any(item.children)" class="selection"
+                (click)="goto(subItem)" [nzSelected]="'/' + $any(route.snapshot)._urlSegment.segments.join('/') === subItem.path">
+              <span class="selection-dot"></span><span>{{ subItem.title }}</span>
+            </li>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+  </nz-sider>
+  <nz-layout class="right">
+    <nz-header>
+      <div class="app-header">
+        <!-- <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
+
+        </span> -->
+        <div class="header-trigger">
+          <div class="header-trigger-left" (click)="isCollapsed = !isCollapsed">
+            <img src="../../assets/images/icon/stealth.png" alt="" class="trigger" nz-icon
+                 [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'">
+          </div>
+          <div class="header-trigger-right">
+          </div>
+        </div>
+
+
+      </div>
+    </nz-header>
+    <main>
+      <div class="inner-top">
+        <span>{{ permissionsService.currentMenuItem?.title }}</span>
+        <span>
+          <nz-breadcrumb>
+            <nz-breadcrumb-item *ngIf="permissionsService.currentMenuItem?.parent">
+              <a> {{ permissionsService.currentMenuItem.parent.title }} </a>
+            </nz-breadcrumb-item>
+             <nz-breadcrumb-item *ngIf="permissionsService.currentMenuItem">
+               <a> {{ permissionsService.currentMenuItem.title }} </a>
+    </nz-breadcrumb-item>
+    </nz-breadcrumb>
+    </span>
+    </div>
+    <div class="inner-content" id="router__wrapper"  [ngStyle]="{padding:needInnerPadding?'24px':'0'}">
+      <router-outlet></router-outlet>
+    </div>
+    </main>
+    <div class="editor">
+      <router-outlet name="editor"></router-outlet>
+    </div>
+  </nz-layout>
+</nz-layout>

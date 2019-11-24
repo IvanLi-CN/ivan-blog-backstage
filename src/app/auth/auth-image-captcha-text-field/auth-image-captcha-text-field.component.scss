@@ -1,0 +1,25 @@
+.left {
+  img {
+    width: 16px;
+    height: 19px;
+  }
+}
+
+input {
+  width: 100%;
+  max-width: 100%;
+}
+
+.right {
+  &.errors {
+    img {
+      padding-right: 11px;
+    }
+  }
+  img.captcha {
+    height: 30px;
+    min-width: 50px;
+    min-height: 30px;
+    width: auto;
+  }
+}

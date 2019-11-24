@@ -1,0 +1,57 @@
+<ng-template #tplContent>
+  <section class="editor-padding">
+    <h3>账号信息</h3>
+    <form class="editor" nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm($event)">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6" nzRequired>IP地址</nz-form-label>
+        <nz-form-control *ngIf="isCreated" [nzSpan]="18" [nzErrorTip]="ipAddressStrErrorTpl">
+          <textarea nz-input formControlName="ipAddressStr" placeholder="一行一个 ip 地址"></textarea>
+          <ng-template #ipAddressStrErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              IP地址不能为空
+            </ng-container>
+            <ng-container *ngIf="control.hasError('ipAddress')">
+              {{ control.getError('ipAddress')?.msg }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('notWhite')">
+              {{ control.getError('notWhite')?.msg }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+        <nz-form-control *ngIf="!isCreated" [nzSpan]="18" [nzErrorTip]="ipAddressErrorTpl">
+          <input nz-input formControlName="ipAddress" placeholder="请输入">
+          <ng-template #ipAddressErrorTpl let-control>
+            <ng-container *ngIf="control.hasError('server')">
+              {{ control.errors.server }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('required')">
+              IP地址不能为空
+            </ng-container>
+            <ng-container *ngIf="control.hasError('ipAddress')">
+              {{ control.getError('ipAddress')?.msg }}
+            </ng-container>
+            <ng-container *ngIf="control.hasError('notWhite')">
+              {{ control.getError('notWhite')?.msg }}
+            </ng-container>
+          </ng-template>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="6">备注</nz-form-label>
+        <nz-form-control [nzSpan]="18">
+          <textarea nz-input formControlName="comments" placeholder="请输入备注"></textarea>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="editor-bottom">
+        <input type="submit" nz-button nzType="primary" value="确定"/>
+        <input type="reset" nz-button value="取消"/>
+      </nz-form-item>
+    </form>
+  </section>
+</ng-template>
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">＋ 新增
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">编辑</app-table-operation-button>

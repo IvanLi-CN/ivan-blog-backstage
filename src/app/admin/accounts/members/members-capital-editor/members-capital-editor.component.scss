@@ -1,0 +1,14 @@
+section{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 15px;
+  .right{
+    float: right;
+    color: #00a8e6;
+    & > *{
+      float: left;
+      margin-left: 15px;
+    }
+  }
+}

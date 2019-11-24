@@ -1,0 +1,32 @@
+<ng-template #tplContent>
+  <h3>费率信息</h3>
+  <form class="editor" nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm($event)">
+    <nz-form-item *ngFor="let gameRate of gameRates">
+      <nz-form-label [nzSpan]="6" nzRequired>{{ gameRate.name }}</nz-form-label>
+      <nz-form-control [nzSpan]="18" [nzErrorTip]="rateErrorTpl">
+        <nz-input-number
+          [ngModelOptions]="{standalone: true}"
+          [nzMin]="1"
+          [nzMax]="100"
+          [nzStep]="1"
+          [nzFormatter]="formatterPercent"
+          [nzParser]="parserPercent"
+          [(ngModel)]="$any(gameRate).rateViewValue"
+        ></nz-input-number>
+        <ng-template #rateErrorTpl let-control>
+          <ng-container *ngIf="control.hasError('server')">
+            {{ control.errors.server }}
+          </ng-container>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="editor-bottom">
+      <input type="submit" nz-button nzType="primary" [value]="isCreated ? '保存' : '修改'"/>
+      <input type="reset" nz-button value="取消"/>
+    </nz-form-item>
+  </form>
+</ng-template>
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">费率设置
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">费率设置
+</app-table-operation-button>

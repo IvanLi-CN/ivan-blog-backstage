@@ -1,0 +1,24 @@
+<ng-template #tplContent>
+  <h3>平台资金</h3>
+  <section>
+    <div class="left">
+      系统余额：<span>0.00</span>
+    </div>
+    <div class="right">
+      <app-table-operation-button>一键归集</app-table-operation-button>
+      <app-table-operation-button>刷新</app-table-operation-button>
+    </div>
+  </section>
+  <section>
+    <div class="left">
+      AG：<span>0.00</span>
+    </div>
+    <div class="right">
+      <app-table-operation-button>取出</app-table-operation-button>
+      <app-table-operation-button>刷新</app-table-operation-button>
+    </div>
+  </section>
+</ng-template>
+<app-operation-button *ngIf="isCreated" type="primary" (doTask)="openDialog($event, tplContent)">＋ 新增
+</app-operation-button>
+<app-table-operation-button *ngIf="!isCreated" (doTask)="openDialog($event, tplContent)">资金</app-table-operation-button>

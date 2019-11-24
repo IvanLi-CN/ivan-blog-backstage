@@ -1,0 +1,26 @@
+.up-or-down-indicator {
+  position: relative;
+  & > * {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0.625em;
+    border-style: solid;
+    border-color: transparent;
+    border-top-color: red;
+    border-bottom-color: green;
+    top: 0.625em;
+    margin-left: 10px;
+    border-width: 0;
+  }
+
+  & > .down {
+    margin-top: 0.1em;
+    border-width: 7px 7px 0;
+  }
+
+  & > .up {
+    margin-top: -0.2em;
+    border-width: 0 7px 7px;
+  }
+}

@@ -1,0 +1,25 @@
+<section class="login">
+  <nz-card style="width:300px;">
+    <form nz-form [formGroup]="form" class="login-form" (ngSubmit)="submit($event)">
+      <nz-form-item>
+        <nz-form-control nzErrorTip="Please input your username!">
+          <nz-input-group nzPrefixIcon="user">
+            <input type="text" nz-input formControlName="account" placeholder="Username" />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control nzErrorTip="Please input your Password!">
+          <nz-input-group nzPrefixIcon="lock">
+            <input type="password" nz-input formControlName="password" placeholder="Password" />
+          </nz-input-group>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button nz-button class="login-form-button" [nzType]="'primary'">Log in</button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+</section>

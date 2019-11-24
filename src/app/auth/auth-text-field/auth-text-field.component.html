@@ -1,0 +1,15 @@
+<app-auth-input-field [isFocus]="isFocus">
+  <div class="left">
+    <img *ngIf="errorTexts.length === 0" src="{{activatedIcon}}" alt="">
+    <img *ngIf="errorTexts.length > 0" src="{{notActivatedIcon}}" alt="">
+  </div>
+  <div>
+
+    <input type="{{type}}" name="username" placeholder="{{label}}" [(ngModel)]="value" (blur)="blur()"
+           (focus)="focus()">
+  </div>
+  <div class="right" *ngIf="errorTexts.length > 0">
+    <img src="../../../assets/images/login/error.png" alt="">
+    <span class="error">{{ errorTexts.join(', ') }}</span>
+  </div>
+</app-auth-input-field>
