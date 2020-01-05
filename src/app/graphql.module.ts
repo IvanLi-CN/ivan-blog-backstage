@@ -6,6 +6,7 @@ import {ApolloLink} from 'apollo-link';
 import { onError } from 'apollo-link-error';
 import {Router} from '@angular/router';
 import {NzMessageService} from 'ng-zorro-antd';
+import {AppAuthLink} from './core/apollo/app-auth-link';
 
 const uri = 'api/graphql'; // <-- add the URL of the GraphQL server here
 
@@ -33,6 +34,7 @@ export function createApollo(httpLink: HttpLink, router: Router, nzMessage: NzMe
   return {
     link: ApolloLink.from([
       errorLink,
+      new AppAuthLink(),
       httpLink.create({uri}),
     ]),
     cache: new InMemoryCache(),
