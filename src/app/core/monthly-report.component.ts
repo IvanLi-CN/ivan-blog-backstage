@@ -174,7 +174,7 @@ export class MonthlyReportComponent<QueryDto extends BaseQueryDto,
         }),
       )),
       map(({startAt, endAt}) => {
-        return this.dateHelperService.getTimeArr4Range(startAt, endAt, 'day');
+        return this.dateHelperService.getTimeArr4Range(startAt, endAt, 'days');
       })
     );
   }
@@ -189,7 +189,7 @@ export class MonthlyReportComponent<QueryDto extends BaseQueryDto,
         })
       ),
       map(({startAt, endAt}) => {
-        return this.dateHelperService.getTimeArr4Range(startAt, endAt, 'day');
+        return this.dateHelperService.getTimeArr4Range(startAt, endAt, 'days');
       })
     );
   }

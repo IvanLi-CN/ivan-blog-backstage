@@ -1,16 +1,16 @@
 import {BaseListDto} from './models/base-list.dto';
 import {BaseQueryDto} from './models/base-query.dto';
-import {BaseIndexComponent} from './base-index.component';
 import {Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AsyncTaskRequest} from './models/AsyncTaskRequest';
 import {NzMessageService, NzModalRef, NzModalService} from 'ng-zorro-antd';
 import {FormBuilder} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
+import {BaseTableComponent} from './base-table.component';
 
 export class BaseModalIndexComponent<
   QueryDto extends BaseQueryDto = BaseQueryDto, ListItem = any, ListDto extends BaseListDto<ListItem> = BaseListDto<ListItem>
-  > extends BaseIndexComponent<QueryDto, ListItem, ListDto> implements OnInit, OnDestroy {
+  > extends BaseTableComponent<QueryDto, ListItem, ListDto> implements OnInit, OnDestroy {
   protected modalWidth = '500px';
   protected modal: NzModalRef<unknown>;
   protected modalTitle: string;
@@ -38,7 +38,7 @@ export class BaseModalIndexComponent<
     public router: Router,
     protected modalService: NzModalService,
   ) {
-    super(fb, message, route, router);
+    super(fb, message);
   }
 
   public async openDialog(asyncTaskRequest: AsyncTaskRequest = null, tplContent = this.tplContent) {

@@ -1,1 +1,1 @@
-export type AppDateGranularity = 'hour' | 'day' | 'month';
+export type AppDateGranularity = 'hours' | 'days' | 'months';

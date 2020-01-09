@@ -1,31 +1,17 @@
-import {combineLatest, merge, Observable, of, ReplaySubject, Subject, Subscription, throwError, timer} from 'rxjs';
+import {merge, Observable, of, ReplaySubject, Subject, Subscription, throwError, timer} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
 import {NzMessageService} from 'ng-zorro-antd';
 import {BaseListDto} from './models/base-list.dto';
-import {
-  catchError,
-  debounceTime,
-  filter,
-  map,
-  pluck,
-  shareReplay,
-  startWith,
-  switchMap,
-  takeUntil,
-  tap
-} from 'rxjs/operators';
-import {ActivatedRoute, Router} from '@angular/router';
+import {catchError, debounceTime, filter, map, pluck, shareReplay, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {BaseQueryDto} from './models/base-query.dto';
 import {AsyncTaskRequest} from './models/AsyncTaskRequest';
 import {AppException} from './exceptions/app-exception';
 import {OnDestroy, OnInit} from '@angular/core';
 import * as moment from 'moment';
-import { UserTypes } from './enums/user-types.enum';
 
-export class BaseIndexComponent<
+export class BaseTableComponent<
   QueryDto extends BaseQueryDto = BaseQueryDto, ListItem = any, ListDto extends BaseListDto<ListItem> = BaseListDto<ListItem>
   > implements OnInit, OnDestroy {
-  sysUserTypes = UserTypes;
   readonly filterForm = this.fb.group({});
   isCollapsed = true;
   protected readonly baseConditions: BaseQueryDto = new BaseQueryDto();
@@ -76,16 +62,12 @@ export class BaseIndexComponent<
   private listResSubject = new Subject<any>();
   listRes$: Observable<any> = this.listResSubject.pipe();
   private watch4FetchListSubscription: Subscription;
-  private watch4FilterSubscription: Subscription;
-  private watch4RouteSubscription: Subscription;
   private watch4FilterFormSubscription: Subscription;
   private watch4conditionsSubscription: Subscription;
 
   constructor(
     protected fb: FormBuilder,
     protected message: NzMessageService,
-    public route: ActivatedRoute,
-    public router: Router,
   ) {
   }
 
@@ -111,7 +93,7 @@ export class BaseIndexComponent<
     // tslint:disable-next-line:no-unused-expression
     $event && $event.preventDefault();
     this.filterForm.updateValueAndValidity();
-    this.mergeConditions2Filter(Object.assign({}, this.getFilterData(), { pageIndex: 1 }));
+    this.mergeConditions2Filter(Object.assign({}, this.getFilterData(), {pageIndex: 1}));
   }
 
   public resetFilter($event = null) {
@@ -184,7 +166,7 @@ export class BaseIndexComponent<
         cleanedDto[key] = dto[key];
       }
     }
-    // console.log('merge', conditions, 'to', cleanedDto);
+    console.log('merge', conditions, 'to', cleanedDto);
     this.filtersSubject.next(cleanedDto);
   }
 
@@ -208,7 +190,7 @@ export class BaseIndexComponent<
       newConditions = Object.assign(
         {},
         newConditions,
-        { skip: (newConditions.pageIndex - 1) * (newConditions.take || conditions.take) },
+        { skip: (newConditions.pageIndex - 1) * (newConditions.take || this.conditions.take) },
       );
     }
     delete newConditions.pageSize;
@@ -383,8 +365,6 @@ export class BaseIndexComponent<
     // this.filters$ = ;
     // this.getRecords$();
     this.watch4FetchListSubscription = this.watch4FetchList();
-    this.watch4FilterSubscription = this.watch4Filter();
-    this.watch4RouteSubscription = this.watch4Route();
     this.watch4FilterFormSubscription = this.watch4FilterForm();
     this.watch4conditionsSubscription = this.watch4Conditions();
   }
@@ -396,10 +376,6 @@ export class BaseIndexComponent<
     this.filterForm.reset();
     // tslint:disable-next-line:no-unused-expression
     this.watch4FetchListSubscription && this.watch4FetchListSubscription.unsubscribe();
-    // tslint:disable-next-line:no-unused-expression
-    this.watch4FilterSubscription && this.watch4FilterSubscription.unsubscribe();
-    // tslint:disable-next-line:no-unused-expression
-    this.watch4RouteSubscription && this.watch4RouteSubscription.unsubscribe();
     // tslint:disable-next-line:no-unused-expression
     this.watch4FilterFormSubscription && this.watch4FilterFormSubscription.unsubscribe();
   }
@@ -497,17 +473,6 @@ export class BaseIndexComponent<
     return this.listDto$.pipe(pluck<ListDto, ListItem[]>('rows'));
   }
 
-  private watch4Filter() {
-    return this.route.queryParams.subscribe(
-      conditions => {
-        // console.log('queryParams', conditions);
-        this.setConditions2Filter(conditions);
-      },
-      err => {
-        this.message.error('数据筛选条件异常！');
-      });
-  }
-
   private watch4FilterForm() {
     return this.filters$.pipe(
       debounceTime(100),
@@ -517,23 +482,6 @@ export class BaseIndexComponent<
         // console.log('conditions', conditions);
         this.filterForm.patchValue(conditions);
         this.patchSortMap(conditions);
-      },
-      err => {
-        this.message.error('数据筛选条件异常！');
-      });
-  }
-
-  private watch4Route() {
-    return combineLatest([
-      this.filters$,
-    ]).pipe(
-      debounceTime(100),
-    ).subscribe(
-      ([conditions]) => {
-        this.router.navigate(
-          ['./'],
-          { relativeTo: this.route, queryParams: conditions, replaceUrl: true },
-        ).then();
       },
       err => {
         this.message.error('数据筛选条件异常！');
