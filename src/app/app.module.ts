@@ -12,6 +12,7 @@ import {IconsProviderModule} from './icons-provider.module';
 import {CustomFormsModule} from 'ngx-custom-validators';
 import {SharedModule} from './shared/shared.module';
 import * as moment from 'moment';
+import {GraphQLModule} from './core/graphql/graphql.module';
 
 moment.locale('zh-cn');
 
@@ -24,7 +25,6 @@ registerLocaleData(zh);
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule,
     IconsProviderModule,
     BrowserAnimationsModule,
     SharedModule,

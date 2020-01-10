@@ -1,15 +1,13 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
-import {BaseUrlInterceptor} from './http-client/base-url.interceptor';
+import {HttpClientModule} from '@angular/common/http';
 import {NgZorroAntdModule} from 'ng-zorro-antd';
-import {UnPackInterceptor} from './http-client/un-pack.interceptor';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import { AmountReadablePipe } from './pipes/amount-readable.pipe';
-import { DateFromNowPipe } from './pipes/date-from-now.pipe';
-import { SafePipe } from './pipes/safe.pipe';
-import { DevicePipe } from './pipes/device.pipe';
-import {GraphQLModule} from '../graphql.module';
+import {AmountReadablePipe} from './pipes/amount-readable.pipe';
+import {DateFromNowPipe} from './pipes/date-from-now.pipe';
+import {SafePipe} from './pipes/safe.pipe';
+import {DevicePipe} from './pipes/device.pipe';
+import {GraphQLModule} from './graphql/graphql.module';
 
 const PIPES = [
   AmountReadablePipe,

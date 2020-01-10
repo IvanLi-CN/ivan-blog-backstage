@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Injector} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {catchError, flatMap, map, pluck, switchMap, take, tap} from 'rxjs/operators';
-import {iif, Observable, of, ReplaySubject} from 'rxjs';
+import {catchError, flatMap, map, pluck, switchMap, switchMapTo, take, tap} from 'rxjs/operators';
+import {iif, interval, Observable, of, ReplaySubject, timer} from 'rxjs';
 import {DomSanitizer} from '@angular/platform-browser';
 import {LoggedUser} from './logged-user.model';
 import {BaseApiService} from '../core/services/base-api.service';
@@ -12,38 +12,36 @@ import gql from 'graphql-tag';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService extends BaseApiService {
+export class AuthService {
 
   readonly currentUserSubject = new ReplaySubject<LoggedUser>(1);
   readonly currentUser$: Observable<LoggedUser> = this.currentUserSubject;
+  private accessToken: string = null;
   public currUser: LoggedUser;
 
   constructor(
-    protected http: HttpClient,
     protected apollo: Apollo,
-    private sanitizer: DomSanitizer,
   ) {
-    super(http);
     this.currentUser$.subscribe(currUser => this.currUser = currUser);
-    this.autoLogin().subscribe();
+    timer(100).pipe(switchMapTo(this.autoLogin())).subscribe();
   }
 
   fetchCaptcha() {
-    return this.http.get('/openapi/captcha.svg', {responseType: 'blob'}).pipe(
-      flatMap(image => {
-        const subject = new ReplaySubject<string>(1);
-        const reader = new FileReader();
-        reader.addEventListener('load', () => {
-          subject.next(this.sanitizer.bypassSecurityTrustUrl(reader.result as string) as string);
-        }, false);
-        if (image) {
-          reader.readAsDataURL(image);
-        } else {
-          subject.thrownError(new Error('无法读取到图片'));
-        }
-        return subject;
-      }),
-    );
+    // return this.http.get('/openapi/captcha.svg', {responseType: 'blob'}).pipe(
+    //   flatMap(image => {
+    //     const subject = new ReplaySubject<string>(1);
+    //     const reader = new FileReader();
+    //     reader.addEventListener('load', () => {
+    //       subject.next(this.sanitizer.bypassSecurityTrustUrl(reader.result as string) as string);
+    //     }, false);
+    //     if (image) {
+    //       reader.readAsDataURL(image);
+    //     } else {
+    //       subject.thrownError(new Error('无法读取到图片'));
+    //     }
+    //     return subject;
+    //   }),
+    // );
   }
 
   login(dto) {
@@ -73,12 +71,14 @@ export class AuthService extends BaseApiService {
   }
 
   logout() {
+    localStorage.removeItem('access_token');
     setTimeout(() => {
       this.currentUserSubject.next(null);
     }, 50);
-    return this.http.get('/api/users/logout').pipe(
-      take(1),
-    );
+    // return this.http.get('/api/users/logout').pipe(
+    //   take(1),
+    // );
+    return of();
   }
 
   autoLogin(): Observable<LoggedUser> {
@@ -105,49 +105,15 @@ export class AuthService extends BaseApiService {
     );
   }
 
-  modify(dto): Observable<any> {
-    return this.http.put<any>(
-      '/api/users',
-      Object.assign({}, dto, {userId: this.currUser.id}),
-    ).pipe(
-      take(1),
-    );
+  updateAccessToken(token) {
+    this.accessToken = token;
+    localStorage.setItem('access_token', token);
   }
 
-  modifyPassword(dto): Observable<any> {
-    return this.http.put<any>(
-      '/api/users/password',
-      Object.assign({}, dto, {id: this.currUser.id}),
-    ).pipe(
-      take(1),
-    );
-  }
-
-  hasAuthByUserType(userType: UserTypes | UserTypes[]): boolean {
-    let hasAuth = false;
-    if (Array.isArray(userType)) {
-      hasAuth = userType.indexOf(this.currUser.type) > -1;
-    } else {
-      hasAuth = this.currUser.type === userType;
+  getAccessToken() {
+    if (!this.accessToken) {
+      this.accessToken = localStorage.getItem('access_token');
     }
-    return hasAuth;
-  }
-
-  outWorking(id: number): Observable<any> {
-    return this.http.put(
-      '/api/financialStaff/outWorking',
-      Object.assign({}, {id})
-    ).pipe(
-      take(1),
-    );
-  }
-
-  working(id: number): Observable<any> {
-    return this.http.put(
-      '/api/financialStaff/working',
-      Object.assign({}, {id})
-    ).pipe(
-      take(1),
-    );
+    return this.accessToken;
   }
 }
