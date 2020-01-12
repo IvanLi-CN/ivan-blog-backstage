@@ -52,7 +52,7 @@ export class BaseModalIndexComponent<
       nzWidth: this.modalWidth,
     });
     this.modal.afterClose.subscribe(() => {
-      this.free();
+      this.destroy();
     });
     // tslint:disable-next-line:no-unused-expression
     asyncTaskRequest && asyncTaskRequest.controlSubject.next({status: 'success'});

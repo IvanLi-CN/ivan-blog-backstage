@@ -34,23 +34,8 @@ export class MembersCapitalEditorComponent extends BaseEditorComponent<any> {
     super(fb, message, route, router, modalService);
   }
 
-  formatterPercent = (value: number) => `${value} %`;
-
-  parserPercent = (value: string) => value.replace(' %', '');
-
   protected fetchOldData(listItem: any): Observable<any> {
     return this.membersService.fetchOne(listItem.id);
-  }
-
-  protected onSubmitCreated(data): Observable<any> {
-    return this.membersService.create(data);
-  }
-
-  protected onSubmitModify(data): Observable<any> {
-    return this.oldData$.pipe(
-      take(1),
-      switchMap(oldData => this.membersService.modify(this.getDataId(oldData), data))
-    );
   }
 }
 

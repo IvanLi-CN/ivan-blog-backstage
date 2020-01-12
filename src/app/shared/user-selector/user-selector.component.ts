@@ -22,7 +22,7 @@ export class UserSelectorComponent extends BaseEntityIdSelectorComponent{
   fetchOldOne = (id => this.usersService.fetchOne(id).pipe(
     map(row => ({label: row.nick, value: row.id})),
   ));
-  fetchData = keyword => this.usersService.fetchList({ take: 100, nick: keyword }).pipe(
+  fetchData = keyword => this.usersService.fetchList({ pageSize: 100, nick: keyword }).pipe(
     pluck('rows'),
     map(rows => rows.map(row => ({label: row.nick, value: row.id})))
   )

@@ -164,7 +164,7 @@ export class PlayerAgentsIndexComponent extends BaseIndexComponent<any, PlayerAg
     return this.playerAgentsService.fetchList(conditions).pipe(
       map(dto => ({
         ...dto,
-        rows: dto.rows.map(item => {
+        records: dto.records.map(item => {
           const playerCountArr: { count: number, date: Moment }[] = item.todayPlayerCount.map(info => ({
             count: info.count,
             date: moment(info.date).startOf('days'),

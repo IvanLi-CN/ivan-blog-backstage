@@ -3,41 +3,12 @@
     <form nz-form [formGroup]="filterForm" nzLayout="inline" (ngSubmit)="onSubmit($event)"
           (reset)="resetFilter($event)">
       <nz-form-item>
-        <nz-form-label>所属代理商</nz-form-label>
-        <nz-form-control>
-          <app-agent-selector formControlName="parentId" [isNeedSuperAdmin]="true"></app-agent-selector>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
         <nz-form-label>状态</nz-form-label>
         <nz-form-control>
           <nz-select formControlName="isActive" nzAllowClear>
             <nz-option *ngFor="let status of activeStatusesService.getFilterData()" [nzValue]="status.value"
                        [nzLabel]="status.text"></nz-option>
           </nz-select>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item  style="grid-column: span 3">
-        <nz-form-label hidden>其他</nz-form-label>
-        <nz-form-control>
-          <nz-input-group nzCompact>
-            <nz-select style="width: 40%;" formControlName="otherField">
-              <nz-option [nzLabel]="'真实姓名'" [nzValue]="'realName'"></nz-option>
-              <nz-option [nzLabel]="'银行账户'" [nzValue]="'bankAccount'"></nz-option>
-              <nz-option [nzLabel]="'银行'" [nzValue]="'bankSubName'"></nz-option>
-              <nz-option [nzLabel]="'phone'" [nzValue]="'phone'"></nz-option>
-              <nz-option [nzLabel]="'邮箱'" [nzValue]="'email'"></nz-option>
-              <nz-option [nzLabel]="'登录IP'" [nzValue]="'ip'"></nz-option>
-              <nz-option [nzLabel]="'注册IP'" [nzValue]="'rgiIp'"></nz-option>
-            </nz-select>
-            <input nz-input style="width: 60%;" formControlName="otherValue" placeholder="请输入"/>
-          </nz-input-group>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label>层级</nz-form-label>
-        <nz-form-control>
-          <app-hierarchy-selector formControlName="hierarchyId" ></app-hierarchy-selector>
         </nz-form-control>
       </nz-form-item>
       <nz-form-item class="operations">
@@ -61,37 +32,19 @@
       <tr>
         <th nzShowCheckbox [nzSelections]="listOfSelection" [(nzChecked)]="isAllChecked"
             [nzIndeterminate]="isIndeterminate" (nzCheckedChange)="checkAll($event)"></th>
-        <th nzWidth="350px" nzShowSort nzSortKey="nick" [nzSort]="sortMap.get('lastActiveAt')">在线状态</th>
-        <th nzWidth="350px">会员名称</th>
-        <th nzWidth="350px">登录ip</th>
-        <th nzWidth="350px">注册ip</th>
-        <th nzWidth="250px">层级</th>
-        <th nzWidth="250px" nzShowSort nzSortKey="balance" [nzSort]="sortMap.get('balance')">余额</th>
-        <th nzWidth="400px">所属代理商</th>
-        <th nzWidth="350px">注册日期</th>
-        <th nzWidth="350px" nzShowSort nzSortKey="balance" [nzSort]="sortMap.get('loginInfo.loginAt')">登录日期</th>
+        <th nzWidth="350px">昵称</th>
+        <th nzWidth="350px">账号</th>
+        <th nzWidth="350px">注册时间</th>
         <th nzWidth="250px">状态</th>
         <th nzWidth="250px">操作</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let data of indexListTable.data">
+      <tr *ngFor="let data of tableRecords">
         <td nzShowCheckbox [nzChecked]="getItemCheck(data)" (nzCheckedChange)="updateItemCheck(data, $event)"></td>
-        <td>
-          {{ data.diff }}
-          <app-table-operations>
-            <app-table-operation-button *ngIf="data.isOnline" (doTask)="focusDownLine(data, $event)">在线</app-table-operation-button>
-            <span *ngIf="!data.isOnline">离线</span>
-          </app-table-operations>
-        </td>
         <td>{{ data.nick }}</td>
-        <td>{{ data.loginInfo?.ip }} <span *ngIf="data.loginInfo?.ipLocation"> ({{ data.loginInfo?.ipLocation }})</span></td>
-        <td>{{ data.rgiIp }} <span *ngIf="data.rgiIpLocation"> ({{ data.rgiIpLocation }})</span></td>
-        <td>{{ data.hierarchyName }}</td>
-        <td><app-tooltip-amount [value]="data.balance"></app-tooltip-amount></td>
-        <td>{{ data.playerAgentName }}</td>
-        <td>{{ data.createdAt | amDateFormat: 'YYYY/MM/DD HH:mm:ss' }}</td>
-        <td>{{ data.loginInfo?.loginAt | amDateFormat: 'YYYY/MM/DD HH:mm:ss'}}</td>
+        <td>{{ data.account }}</td>
+        <td>{{ data.createdAt | amDateFormat: 'L LTS' }}</td>
         <td>
           <app-enum-perview [enumValue]="!!data.isActive" [enumService]="activeStatusesService"></app-enum-perview>
         </td>

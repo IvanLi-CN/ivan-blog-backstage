@@ -9,7 +9,9 @@ type Account {
   account: String!
   createdAt: DateTime!
   id: ID!
+  isActive: Boolean!
   nick: String!
+  systemRole: String!
   updatedAt: DateTime!
 }
 
@@ -17,7 +19,13 @@ type AccountInfoDto {
   account: String!
   id: Float!
   nick: String!
-  role: String!
+  systemRole: String!
+}
+
+type AppBaseEntity {
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime!
 }
 
 type Article {
@@ -35,13 +43,8 @@ type Article {
   updatedAt: DateTime!
 }
 
-type BaseEntity {
-  createdAt: DateTime!
-  id: ID!
-  updatedAt: DateTime!
-}
-
 type Mutation {
+  adminLogin(account: String!, password: String!): Account!
   createArticle(createArticleInput: CreateArticleInput!): Article!
   createTag(createTagInput: CreateTagInput!): Tag!
   memberLogin(account: String!, password: String!): Account!
@@ -55,8 +58,9 @@ type Mutation {
 }
 
 type Query {
-  accounts(account: String, nick: String, pageIndex: Int = 1, pageSize: Int = 10): [Account!]!
-  accountsCount(account: String, nick: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
+  account(id: Int!): [Account!]!
+  accounts(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): [Account!]!
+  accountsCount(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
   count(pageIndex: Int = 1, pageSize: Int = 10, title: String): Int!
   currAccount: AccountInfoDto!
   getArticle(id: Int, slug: String, title: String): Article!

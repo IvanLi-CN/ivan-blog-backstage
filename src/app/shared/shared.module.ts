@@ -65,7 +65,6 @@ const DIRECTIVE = [
 
 @NgModule({
   declarations: [
-    // your components
     ...COMPONENT,
     ...PIPES,
     ...DIRECTIVE,
@@ -81,7 +80,6 @@ const DIRECTIVE = [
     CoreModule,
     MomentModule,
     ...THIRDMODULES,
-    // your components
     ...COMPONENT,
     ...PIPES,
     Nav2pageDirective,

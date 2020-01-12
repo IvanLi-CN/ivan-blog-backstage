@@ -12,10 +12,10 @@ import Decimal from 'decimal.js';
 import {DateHelperService} from './services/date-helper.service';
 import {MonthlyReportRecordDto} from './models/monthly-report-record.dto';
 
-export class MonthlyReportComponent<QueryDto extends BaseQueryDto,
-  ListItem extends MonthlyReportRecordDto,
-  ListDto extends BaseListDto<ListItem> = BaseListDto<ListItem>,
-  > extends BaseIndexComponent<QueryDto, ListItem, ListDto> {
+export class MonthlyReportComponent<QueryDtoType extends BaseQueryDto,
+  ItemType extends MonthlyReportRecordDto,
+  ListType extends BaseListDto<ItemType> = BaseListDto<ItemType>,
+  > extends BaseIndexComponent<QueryDtoType, ItemType, ListType> {
   readonly defaultConditions = {dateRange: moment().startOf('months').toDate()} as any;
 
   isFirstHalfMonthSubject = new BehaviorSubject<boolean>(true);
@@ -67,7 +67,7 @@ export class MonthlyReportComponent<QueryDto extends BaseQueryDto,
     };
   }
 
-  protected getFetchListObservable(conditions: QueryDto): Observable<BaseListDto<ListItem>> {
+  protected getFetchListObservable(conditions: QueryDtoType): Observable<ListType> {
     // tslint:disable-next-line:no-console
     // @ts-ignore
     return of({

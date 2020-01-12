@@ -1,15 +1,16 @@
+import {ToBoolean} from 'class-sanitizer';
+
 export class BaseQueryDto {
-  take?: number;
-  skip?: number;
-  baseDateRange?: [Date, Date];
-  startAt?: string | Date;
-  endAt?: string | Date;
+  pageSize?: number;
+  pageIndex?: number;
+  createdAt?: [Date, Date];
   otherField?: string;
   otherValue?: string | number | boolean;
+  @ToBoolean(true)
   isActive?: boolean;
 
   constructor() {
-    this.take = 10;
-    this.skip = 0;
+    this.pageSize = 10;
+    this.pageIndex = 1;
   }
 }

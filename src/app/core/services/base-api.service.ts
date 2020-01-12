@@ -55,7 +55,7 @@ export class BaseApiService<QueryDto extends BaseQueryDto = BaseQueryDto> {
       take(1),
       map(dto => ({
         ...dto,
-        rows: dto.rows.map(item => this.convertResDto(item)),
+        records: dto.rows.map(item => this.convertResDto(item)),
       }))
     );
   }

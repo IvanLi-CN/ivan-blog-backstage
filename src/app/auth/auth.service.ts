@@ -1,11 +1,7 @@
-import {Injectable, Injector} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {catchError, flatMap, map, pluck, switchMap, switchMapTo, take, tap} from 'rxjs/operators';
-import {iif, interval, Observable, of, ReplaySubject, timer} from 'rxjs';
-import {DomSanitizer} from '@angular/platform-browser';
+import {Injectable} from '@angular/core';
+import {catchError, pluck, switchMapTo, take, tap} from 'rxjs/operators';
+import {Observable, of, ReplaySubject, timer} from 'rxjs';
 import {LoggedUser} from './logged-user.model';
-import {BaseApiService} from '../core/services/base-api.service';
-import {UserTypes} from '../core/enums/user-types.enum';
 import {Apollo} from 'apollo-angular';
 import gql from 'graphql-tag';
 
@@ -16,8 +12,8 @@ export class AuthService {
 
   readonly currentUserSubject = new ReplaySubject<LoggedUser>(1);
   readonly currentUser$: Observable<LoggedUser> = this.currentUserSubject;
-  private accessToken: string = null;
   public currUser: LoggedUser;
+  private accessToken: string = null;
 
   constructor(
     protected apollo: Apollo,
@@ -53,13 +49,14 @@ export class AuthService {
     }
     return this.apollo.mutate({
       mutation: gql`
-          mutation ($account: String!, $password: String!){
-              memberLogin(account: $account, password: $password){
-                  id
-                  account
-                  nick
-              }
+        mutation ($account: String!, $password: String!){
+          adminLogin(account: $account, password: $password){
+            id
+            account
+            nick
+            systemRole
           }
+        }
       `,
       variables: tmp,
     }).pipe(
@@ -82,25 +79,25 @@ export class AuthService {
   }
 
   autoLogin(): Observable<LoggedUser> {
-    return this.apollo.watchQuery({
+    return this.apollo.watchQuery<{ currAccount: LoggedUser }>({
       query: gql`
-          {
-              currAccount{
-                  id
-                  account
-                  nick
-                  role
-              }
+        {
+          currAccount{
+            id
+            account
+            nick
+            systemRole
           }
+        }
       `
     }).valueChanges.pipe(
-      tap(console.log),
       take(1),
       pluck('data'),
+      pluck('currAccount'),
       tap(user => this.currentUserSubject.next(user)),
       catchError((err => {
         console.error(err);
-        return of();
+        return of<LoggedUser>();
       }))
     );
   }

@@ -1,5 +1,6 @@
 export class BaseListDto<T> {
-  rows: T[];
+  records: T[];
   count: number;
+  total?: Partial<T> & {[p: string]: any};
   [p: string]: any;
 }

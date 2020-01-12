@@ -1,26 +1,47 @@
 import {merge, Observable, of, ReplaySubject, Subject, Subscription, throwError, timer} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService} from 'ng-zorro-antd';
+import {NzMessageService, NzTableComponent} from 'ng-zorro-antd';
 import {BaseListDto} from './models/base-list.dto';
-import {catchError, debounceTime, filter, map, pluck, shareReplay, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {
+  catchError,
+  debounceTime,
+  filter,
+  map,
+  pluck,
+  share,
+  shareReplay,
+  startWith,
+  switchMap,
+  switchMapTo,
+  takeUntil,
+  tap
+} from 'rxjs/operators';
 import {BaseQueryDto} from './models/base-query.dto';
 import {AsyncTaskRequest} from './models/AsyncTaskRequest';
 import {AppException} from './exceptions/app-exception';
-import {OnDestroy, OnInit} from '@angular/core';
-import * as moment from 'moment';
+import {OnDestroy, OnInit, ViewChild} from '@angular/core';
+import * as debug from 'debug';
+import {sanitize} from 'class-sanitizer';
+import {fromPromise} from 'rxjs/internal-compatibility';
 
-export class BaseTableComponent<
-  QueryDto extends BaseQueryDto = BaseQueryDto, ListItem = any, ListDto extends BaseListDto<ListItem> = BaseListDto<ListItem>
+const log = debug('ivan:base:table');
+
+export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto,
+  ItemType = any,
+  ListType extends BaseListDto<ItemType> = BaseListDto<ItemType>,
   > implements OnInit, OnDestroy {
-  readonly filterForm = this.fb.group({});
   isCollapsed = true;
-  protected readonly baseConditions: BaseQueryDto = new BaseQueryDto();
-  protected readonly defaultConditions: QueryDto = {} as QueryDto;
-  protected readonly filtersSubject = new Subject<QueryDto>();
-  public readonly filters$: Observable<QueryDto> = this.getFilters$();
-  listDtoSubject: Subject<ListDto> = this.getListDtoSubject();
-  readonly listDto$: Observable<ListDto> = this.listDtoSubject;
-  public records$ = this.getRecords$();
+  @ViewChild('indexListTable', {static: true})
+  table: NzTableComponent;
+  public readonly filterForm = this.fb.group({});
+  public readonly filters$: Observable<QueryDtoType>;
+  public readonly listDtoSubject: Subject<ListType>;
+  private readonly destroyingSubject = new Subject<void>();
+  private readonly destroyedSubject = new Subject<void>();
+  public readonly listDto$: Observable<ListType>;
+  public readonly records$: Observable<ListType[]>;
+  public readonly destroying$: Observable<void>;
+  public readonly destroyed$: Observable<void>;
   isLoading = false;
   records: any[] = [];
   totalCount = 0;
@@ -28,7 +49,7 @@ export class BaseTableComponent<
   isIndeterminate = false;
   isAllChecked = false;
   numberOfChecked: number;
-  conditions: QueryDto = null;
+  conditions: QueryDtoType = null;
   listOfSelection = [
     {
       text: '全选',
@@ -57,28 +78,41 @@ export class BaseTableComponent<
       }
     }
   ];
-  pageSize$: Observable<number> = this.filters$.pipe(pluck('take'), startWith(0));
   sortMap = new Map<string, string>();
+  protected readonly baseConditions: QueryDtoType = new BaseQueryDto() as QueryDtoType;
+  protected readonly defaultConditions: QueryDtoType = this.baseConditions;
+  protected readonly filtersSubject = new Subject<QueryDtoType>();
   private listResSubject = new Subject<any>();
-  listRes$: Observable<any> = this.listResSubject.pipe();
-  private watch4FetchListSubscription: Subscription;
-  private watch4FilterFormSubscription: Subscription;
-  private watch4conditionsSubscription: Subscription;
+  public readonly listRes$: Observable<any> = this.listResSubject.pipe();
 
   constructor(
     protected fb: FormBuilder,
     protected message: NzMessageService,
   ) {
+    this.destroyed$ = this.getDestroyed$();
+    this.destroying$ = this.getDestroying$();
+    this.listDtoSubject = this.getListDtoSubject();
+    this.listDto$ = this.listDtoSubject;
+    this.filters$ = this.getFilters$();
+    this.records$ = this.getRecords$();
   }
 
-  get pageIndex$() {
+  get tableRecords(): ItemType[] {
+    return this.table.data;
+  }
+
+  get pageSize$(): Observable<number> {
+    return this.filters$.pipe(pluck('pageSize'), startWith(10));
+  }
+
+  get pageIndex$(): Observable<number> {
     return this.filters$.pipe(
-      map(conditions => Math.ceil((conditions.skip || this.baseConditions.skip) / (conditions.take || this.baseConditions.take) + 1))
+      pluck('pageIndex')
     );
   }
 
-  get pageCount() {
-    return Math.ceil(this.totalCount / this.baseConditions.take);
+  get pageCount(): number {
+    return Math.ceil(this.totalCount / this.baseConditions.pageSize);
   }
 
   ngOnInit(): void {
@@ -86,7 +120,7 @@ export class BaseTableComponent<
   }
 
   ngOnDestroy(): void {
-    this.free();
+    this.destroy();
   }
 
   public onSubmit($event = null) {
@@ -106,7 +140,7 @@ export class BaseTableComponent<
       this.filterForm.controls[key].updateValueAndValidity();
       emptyConditions[key] = this.defaultConditions[key] || null;
     }
-    this.mergeConditions2Filter(Object.assign({}, this.getFilterData(), { ...emptyConditions, pageIndex: 1 }));
+    this.mergeConditions2Filter(Object.assign({}, this.getFilterData(), {...emptyConditions, pageIndex: 1}));
   }
 
   public checkAll(isChecked: boolean): void {
@@ -131,15 +165,15 @@ export class BaseTableComponent<
     return this.checkedIdSet.has(this.getItemId(item));
   }
 
-  public getItemId(item: ListItem) {
+  public getItemId(item: ItemType) {
     return (item as any).id;
   }
 
   public nzPageIndexChange(pageIndex: number) {
-    this.mergeConditions2Filter({ pageIndex });
+    this.mergeConditions2Filter({pageIndex});
   }
 
-  public sort({ key, value }: { key: string, value: 'descend' | 'ascend' | null | string }) {
+  public sort({key, value}: { key: string, value: 'descend' | 'ascend' | null | string }) {
     this.sortMap.set(key, value);
     const sortConditions = {};
     for (const sortKey of this.sortMap.keys()) {
@@ -160,7 +194,7 @@ export class BaseTableComponent<
   mergeConditions2Filter(conditions) {
     const newConditions = this.conditionsSanitizer(conditions);
     const dto = Object.assign({}, this.defaultConditions, this.conditions, conditions, newConditions);
-    const cleanedDto = {} as QueryDto;
+    const cleanedDto = {} as QueryDtoType;
     for (const key of Object.keys(dto)) {
       if (dto[key] !== null && dto[key] !== undefined) {
         cleanedDto[key] = dto[key];
@@ -172,7 +206,7 @@ export class BaseTableComponent<
 
   setConditions2Filter(conditions) {
     const dto = this.conditionsSanitizer(conditions);
-    const cleanedDto = {} as QueryDto;
+    const cleanedDto = {} as QueryDtoType;
     for (const key of Object.keys(dto)) {
       if (dto[key] !== null && dto[key] !== undefined) {
         cleanedDto[key] = dto[key];
@@ -183,46 +217,36 @@ export class BaseTableComponent<
   }
 
   conditionsSanitizer(conditions) {
-    let newConditions = { ...conditions };
-    // tslint:disable-next-line:no-unused-expression
-    newConditions.pageSize && (newConditions.take = +newConditions.pageSize);
-    if (newConditions.pageIndex) {
-      newConditions = Object.assign(
-        {},
-        newConditions,
-        { skip: (newConditions.pageIndex - 1) * (newConditions.take || this.conditions.take) },
-      );
-    }
-    delete newConditions.pageSize;
-    delete newConditions.pageIndex;
+    const newConditions = {...conditions};
+    sanitize(newConditions);
     return newConditions;
   }
 
   pageSizeChange(pageSize: number) {
-    this.mergeConditions2Filter({ pageSize });
+    this.mergeConditions2Filter({pageSize});
   }
 
-  remoteRemove(data: ListItem): Observable<any> {
+  remoteRemove(data: ItemType): Observable<any> {
     return throwError(new AppException('remoteRemove'));
   }
 
-  remoteUpdate(oldItem: ListItem, updateDto: any): Observable<any> {
+  remoteUpdate(oldItem: ItemType, updateDto: any): Observable<any> {
     return throwError(new AppException('remoteUpdate'));
   }
 
-  remoteBatchUpdate(oldItems: ListItem[], updateDto: any): Observable<any> {
+  remoteBatchUpdate(oldItems: ItemType[], updateDto: any): Observable<any> {
     return throwError(new AppException('remoteBatchUpdate'));
   }
 
-  async remove({ controlSubject }: AsyncTaskRequest, data: any) {
+  async remove({controlSubject}: AsyncTaskRequest, data: any) {
     try {
       await this.remoteRemove(data).subscribe(
         () => {
           this.refreshList();
-          controlSubject.next({ status: 'success' });
+          controlSubject.next({status: 'success'});
         },
         error => {
-          controlSubject.next({ status: 'failed' });
+          controlSubject.next({status: 'failed'});
         }
       );
     } catch (e) {
@@ -230,13 +254,13 @@ export class BaseTableComponent<
     }
   }
 
-  updateListItem(updateDto: any, oldItem: ListItem, $event: AsyncTaskRequest = null) {
+  updateListItem(updateDto: any, oldItem: ItemType, $event: AsyncTaskRequest = null) {
     return this.remoteUpdate(oldItem, updateDto).pipe(
       tap(
         () => {
           this.updateLocalListItem(this.getItemId(oldItem), updateDto);
           if ($event) {
-            $event.controlSubject.next({ status: 'success' });
+            $event.controlSubject.next({status: 'success'});
             this.message.success('更新成功！');
             $event.controlSubject.complete();
           }
@@ -252,7 +276,7 @@ export class BaseTableComponent<
     );
   }
 
-  batchUpdateListItems(updateDto: any, oldItems: ListItem[], $event: AsyncTaskRequest = null) {
+  batchUpdateListItems(updateDto: any, oldItems: ItemType[], $event: AsyncTaskRequest = null) {
     return this.remoteBatchUpdate(oldItems, updateDto).pipe(
       tap(
         () => {
@@ -260,7 +284,7 @@ export class BaseTableComponent<
             this.updateLocalListItem(this.getItemId(oldItem), updateDto);
           });
           if ($event) {
-            $event.controlSubject.next({ status: 'success' });
+            $event.controlSubject.next({status: 'success'});
             this.message.success('更新成功！');
             $event.controlSubject.complete();
           }
@@ -297,11 +321,11 @@ export class BaseTableComponent<
     return this.records.filter(item => ids.has(item.id));
   }
 
-  async batchUpdate(updateDto: any, checker: (item: ListItem) => string = null, $event: AsyncTaskRequest = null) {
+  async batchUpdate(updateDto: any, checker: (item: ItemType) => string = null, $event: AsyncTaskRequest = null) {
     try {
       const oldItems = this.getCheckedItems();
       if (oldItems.length === 0) {
-        $event.controlSubject.next({ status: 'failed' });
+        $event.controlSubject.next({status: 'failed'});
         this.message.info('您尚未选择任一记录');
         $event.controlSubject.complete();
         return;
@@ -316,7 +340,7 @@ export class BaseTableComponent<
       }
       await Promise.all(oldItems.map(oldItem => this.updateListItem(updateDto, oldItem).toPromise()));
       if ($event) {
-        $event.controlSubject.next({ status: 'success' });
+        $event.controlSubject.next({status: 'success'});
         this.message.success('批量更新成功！');
         $event.controlSubject.complete();
       }
@@ -327,11 +351,11 @@ export class BaseTableComponent<
     }
   }
 
-  async batchUpdateByItems(updateDto: any, checker: (item: ListItem) => string = null, $event: AsyncTaskRequest = null) {
+  async batchUpdateByItems(updateDto: any, checker: (item: ItemType) => string = null, $event: AsyncTaskRequest = null) {
     try {
       const oldItems = this.getCheckedItems();
       if (oldItems.length === 0) {
-        $event.controlSubject.next({ status: 'failed' });
+        $event.controlSubject.next({status: 'failed'});
         this.message.info('您尚未选择任一记录');
         $event.controlSubject.complete();
         return;
@@ -346,7 +370,7 @@ export class BaseTableComponent<
       }
       await this.batchUpdateListItems(updateDto, oldItems).toPromise();
       if ($event) {
-        $event.controlSubject.next({ status: 'success' });
+        $event.controlSubject.next({status: 'success'});
         this.message.success('批量更新成功！');
         $event.controlSubject.complete();
       }
@@ -357,36 +381,26 @@ export class BaseTableComponent<
     }
   }
 
-  toAgencyManagement(commands: any, queryParams: any) {
-    console.error('作废');
-  }
-
   protected initialized() {
-    // this.filters$ = ;
-    // this.getRecords$();
-    this.watch4FetchListSubscription = this.watch4FetchList();
-    this.watch4FilterFormSubscription = this.watch4FilterForm();
-    this.watch4conditionsSubscription = this.watch4Conditions();
+    this.watch4FetchList();
+    this.watch4FilterForm();
+    this.watch4Conditions();
+    this.watchDestroy();
   }
 
-  protected free() {
+  protected destroy() {
     this.isIndeterminate = false;
     this.isAllChecked = false;
     this.checkedIdSet = new Set();
     this.filterForm.reset();
-    // tslint:disable-next-line:no-unused-expression
-    this.watch4FetchListSubscription && this.watch4FetchListSubscription.unsubscribe();
-    // tslint:disable-next-line:no-unused-expression
-    this.watch4FilterFormSubscription && this.watch4FilterFormSubscription.unsubscribe();
+    this.destroyingSubject.next();
   }
 
-  protected getFetchListObservable(conditions: QueryDto): Observable<BaseListDto<ListItem>> {
-    // tslint:disable-next-line:no-console
-    // @ts-ignore
+  protected getFetchListObservable(conditions: QueryDtoType): Observable<ListType> {
     return of({
       count: 0,
-      rows: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
-    }).pipe(tap(() => console.debug('发起查询', conditions)));
+      records: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
+    } as ListType).pipe(tap(() => log('发起查询 %o', conditions)));
   }
 
   protected getFilterData() {
@@ -402,26 +416,39 @@ export class BaseTableComponent<
   protected mergeConditions(conditions) {
     return Object.assign({}, this.baseConditions, {
       ...conditions,
-      skip: +conditions.skip || this.baseConditions.skip,
-      take: +conditions.take || this.baseConditions.take,
+      pageIndex: +conditions.pageIndex || this.baseConditions.pageIndex,
+      pageSize: +conditions.pageSize || this.baseConditions.pageSize,
     });
+  }
+
+  protected getFilters$() {
+    return merge(
+      this.filtersSubject,
+      timer(100).pipe(
+        map(() => this.defaultConditions),
+        takeUntil(this.filtersSubject),
+      ),
+    ).pipe(
+      map(conditions => this.mergeConditions(conditions)),
+      shareReplay(1),
+    );
+  }
+
+  protected getRecords$(): Observable<any[]> {
+    return this.listDto$.pipe(pluck<ListType, ItemType[]>('records'));
+  }
+
+  protected getListDtoSubject(): Subject<ListType> {
+    return new ReplaySubject<ListType>(1);
   }
 
   private watch4FetchList() {
     return this.filters$.pipe(
+      takeUntil(this.destroyed$),
       tap(() => this.isLoading = true),
       debounceTime(300),
       switchMap(conditions => {
-        conditions = { ...conditions };
-        if (conditions.baseDateRange) {
-          if (conditions.baseDateRange[0]) {
-            conditions.startAt = moment(conditions.baseDateRange[0]).startOf('d').toISOString();
-          }
-          if (conditions.baseDateRange[1]) {
-            conditions.endAt = moment(conditions.baseDateRange[1]).endOf('d').toISOString();
-          }
-          delete conditions.baseDateRange;
-        }
+        conditions = {...conditions};
         if (conditions.otherField) {
           conditions[conditions.otherField] = conditions.otherValue;
           delete conditions.otherField;
@@ -443,7 +470,7 @@ export class BaseTableComponent<
       filter(value => !(value instanceof AppException))
     ).subscribe(
       dto => {
-        this.records = dto.rows;
+        this.records = dto.records;
         this.totalCount = dto.count;
         this.isLoading = false;
         this.listResSubject.next(dto);
@@ -456,25 +483,9 @@ export class BaseTableComponent<
       });
   }
 
-
-  protected getFilters$() {
-    return merge(
-      this.filtersSubject,
-      timer(100).pipe(
-        map(() => this.defaultConditions),
-        takeUntil(this.filtersSubject),
-      ),
-    ).pipe(
-      map(conditions => this.mergeConditions(conditions)),
-      shareReplay(1),
-    );
-  }
-  protected getRecords$(): Observable<any[]> {
-    return this.listDto$.pipe(pluck<ListDto, ListItem[]>('rows'));
-  }
-
   private watch4FilterForm() {
     return this.filters$.pipe(
+      takeUntil(this.destroyed$),
       debounceTime(100),
     ).subscribe(
       conditions => {
@@ -504,12 +515,36 @@ export class BaseTableComponent<
   }
 
   private watch4Conditions() {
-    return this.filters$.subscribe(conditions => {
+    return this.filters$.pipe(
+      takeUntil(this.destroyed$),
+    ).subscribe(conditions => {
       this.conditions = conditions;
     });
   }
 
-  protected getListDtoSubject(): Subject<ListDto> {
-    return new ReplaySubject<ListDto>(1);
+  private getDestroying$() {
+    return this.destroyingSubject.pipe(
+      takeUntil(this.destroyed$),
+      share(),
+    );
+  }
+
+  private getDestroyed$() {
+    return this.destroyedSubject.pipe(share());
+  }
+
+  private watchDestroy() {
+    this.destroying$.pipe(
+      takeUntil(this.destroyed$),
+      switchMap(() => fromPromise(this.isAllowDestroy())),
+      filter(value => value),
+    ).subscribe(() => {
+      this.destroyedSubject.next();
+    });
+  }
+
+  private async isAllowDestroy(): Promise<boolean> {
+    log('allow destroy');
+    return true;
   }
 }

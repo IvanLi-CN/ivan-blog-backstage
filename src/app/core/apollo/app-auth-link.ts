@@ -43,7 +43,6 @@ export class AppAuthLink extends ApolloLink {
   }
 
   private getAccessToken(): string {
-    console.log(this.$injector.get(AuthService));
     return this.$injector.get(AuthService).getAccessToken();
   }
 }

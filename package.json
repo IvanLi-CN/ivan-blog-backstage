@@ -25,6 +25,7 @@
     "apollo-client": "^2.6.0",
     "apollo-link": "^1.2.11",
     "apollo-link-error": "^1.1.12",
+    "class-sanitizer": "^0.0.5",
     "debug": "^4.1.1",
     "decimal.js": "^10.2.0",
     "graphql": "^14.5.0",

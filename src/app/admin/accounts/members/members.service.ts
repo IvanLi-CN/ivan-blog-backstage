@@ -1,66 +1,82 @@
-import {Injectable} from '@angular/core';
-import {BaseApiService} from '../../../core/services/base-api.service';
-import {HttpClient} from '@angular/common/http';
+import {Injectable, QueryList} from '@angular/core';
 import {Observable} from 'rxjs';
-import {map, take} from 'rxjs/operators';
+import {map, pluck, take, tap} from 'rxjs/operators';
+import {Apollo} from 'apollo-angular';
+import gql from 'graphql-tag';
+import {Account} from '../models/account';
+import {QueryMembersDto} from './query-members.dto';
+import {BaseListDto} from '../../../core/models/base-list.dto';
 
 @Injectable({
   providedIn: 'root'
 })
-export class MembersService extends BaseApiService {
-  readonly apiPath = '/api/users/playerList';
+export class MembersService {
   constructor(
-    protected http: HttpClient,
+    private readonly apollo: Apollo,
   ) {
-    super(http);
   }
 
-  fetchOne(userId: number): Observable<any> {
-    return this.http.get<any>(
-      `/api/users/getInfo`,
-      {params: this.convertQueryDtoToHttpParams({userId})}
-    ).pipe(
-      take(1),
-      map(data => this.convertResDto(data)),
+  fetchOne(id: number): Observable<Account> {
+    return this.apollo.watchQuery<Account>({
+      query: gql`
+        query account($id: Int!) {
+          account(id: $id) {
+            account,
+            id,
+            createdAt,
+            isActive,
+          }
+        }
+      `,
+      variables: {
+        id,
+      }
+    }).valueChanges.pipe(
+      pluck('data')
+    );
+  }
+
+  fetchList(queryDto: QueryMembersDto): Observable<BaseListDto<Account>> {
+    return this.apollo.watchQuery<{accounts: Account[], accountsCount: number}>({
+      query: gql`
+        query accounts(
+          $account: String,
+          $nick: String,
+          $pageIndex: Int,
+          $pageSize: Int,
+          $isActive: Boolean,
+        ) {
+          accounts(
+            account: $account,
+            nick: $nick,
+            pageIndex: $pageIndex,
+            pageSize: $pageSize,
+            isActive: $isActive,
+          ) {
+            account,
+            id,
+            nick,
+            createdAt,
+            isActive,
+          },
+          accountsCount(
+            account: $account,
+            nick: $nick,
+            pageIndex: $pageIndex,
+            pageSize: $pageSize,
+            isActive: $isActive,
+          )
+        }
+      `,
+      variables: {
+        ...queryDto,
+      }
+    }).valueChanges.pipe(
+      map(ref => ref.data),
       map(data => ({
-        ...data,
-        areaCode: data.areaCode && data.areaCode.split(','),
+        records: data.accounts,
+        count: data.accountsCount,
       })),
-    );
-  }
-  remove(id: number): Observable<any> {
-    return this.http.delete<any>(
-      '/api/users',
-      {params: this.convertQueryDtoToHttpParams({id})}
-    ).pipe(
-      take(1),
-    );
-  }
-
-  create(dto): Observable<any> {
-    return this.http.post<any>(
-      '/api/users',
-      dto,
-    ).pipe(
-      take(1),
-    );
-  }
-
-  modify(id: number, dto): Observable<any> {
-    return this.http.put<any>(
-      '/api/users',
-      Object.assign({}, dto, {userId: id}),
-    ).pipe(
-      take(1),
-    );
-  }
-
-  focusDownLine(userId: number): Observable<any> {
-    return this.http.post<any>(
-      '/api/users/destroySession',
-      {userId},
-    ).pipe(
-      take(1),
     );
   }
 }

@@ -10,7 +10,6 @@ import {HttpClient} from '@angular/common/http';
 import {BaseListDto} from '../models/base-list.dto';
 import {QueryPermissionGroupsDto} from '../models/query-permission-groups.dto';
 import {UserTypesService} from '../enums/user-types.service';
-import {environment} from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +26,9 @@ export class PermissionsService extends BaseApiService {
       id: '200',
       title: '账号管理',
       icon: 'account',
-      path: '/accounts',
+      children: [
+        { id: '201', title: '会员管理', path: '/accounts/members' },
+      ]
     },
     {
       id: '300',
@@ -39,9 +40,6 @@ export class PermissionsService extends BaseApiService {
         {id: '302', title: '编辑文章', path: '/articles'},
       ]
     }];
-  get permissions() {
-    return this.allPermissions;
-  }
   basePermissionIds = [];
   permissionIds4Role = {
     [UserTypes.companyAgent]: ['204', '1003', '1004', '1005', '1007', '1018'],
@@ -53,48 +51,10 @@ export class PermissionsService extends BaseApiService {
   };
   currentMenuItem: any;
   currentRoleInfo: any;
-  readonly availablePageIds$: Observable<string[]> = this.authService.currentUser$.pipe(
-    switchMap(user => iif(
-      () => !user,
-      of([]),
-      this.permissionIds$
-      ),
-    ),
-  );
-  readonly availableMenu$: Observable<PermissionItem[]> = combineLatest(
-    this.availablePageIds$,
-    of(this.permissions),
-  ).pipe(
-    map(([ids, pages]) =>
-      from(pages).pipe(
-        switchMap(page =>
-          from(ids).pipe(
-            filter(id => id === page.id)
-          )
-        )
-      ),
-    ),
-    toArray(),
-    tap(console.log),
-  );
-  readonly availablePages$: Observable<PermissionItem[]> = this.availableMenu$.pipe(
-    switchMap(availableMenus => of(availableMenus).pipe(
-      switchMap(menus => from(menus)),
-      map(menus => Array.isArray(menus.children) ? [menus, ...menus.children] : [menus]),
-      switchMap(pages => from(pages)),
-      toArray(),
-    )),
-  );
-
-  readonly permissionIds$: Observable<string[]> = of(this.permissions).pipe(
-    switchMap(availableMenus => of(availableMenus).pipe(
-      switchMap(menus => from(menus)),
-      map(menus => Array.isArray(menus.children) ? [menus, ...menus.children] : [menus]),
-      switchMap(pages => from(pages)),
-      pluck('id'),
-      toArray(),
-    )),
-  );
+  readonly availablePageIds$: Observable<string[]>;
+  readonly availableMenu$: Observable<PermissionItem[]>;
+  readonly availablePages$: Observable<PermissionItem[]>;
+  readonly permissionIds$: Observable<string[]>;
   private routePath = new ReplaySubject(1);
 
   constructor(
@@ -110,7 +70,15 @@ export class PermissionsService extends BaseApiService {
         menu1.children.forEach(menu2 => menu2.parent = menu1);
       }
     });
+    this.availablePageIds$ = this.getAvailablePageIds$();
+    this.availableMenu$ = this.getAvailableMenu$();
+    this.availablePages$ = this.getAvailablePages$();
+    this.permissionIds$ = this.getPermissionIds$();
     this.watch4Title();
+  }
+
+  get permissions() {
+    return this.allPermissions;
   }
 
   fetchList(queryDto: QueryPermissionGroupsDto): Observable<BaseListDto<any>> {
@@ -119,6 +87,63 @@ export class PermissionsService extends BaseApiService {
       {params: this.convertQueryDtoToHttpParams(queryDto)}
     ).pipe(
       take(1),
+    );
+  }
+
+  private getAvailablePageIds$() {
+    return this.authService.currentUser$.pipe(
+      switchMap(user => iif(
+        () => !user,
+        of([]),
+        this.permissionIds$
+        ),
+      ),
+    );
+  }
+
+  private getAvailablePages$() {
+    return this.availableMenu$.pipe(
+      switchMap(availableMenus => of(availableMenus).pipe(
+        switchMap(menus => from(menus)),
+        map(menus => Array.isArray(menus.children) ? [menus, ...menus.children] : [menus]),
+        switchMap(pages => from(pages)),
+        toArray(),
+      )),
+    );
+  }
+
+  private getPermissionIds$() {
+    return of(this.permissions).pipe(
+      switchMap(availableMenus => of(availableMenus).pipe(
+        switchMap(menus => from(menus)),
+        map(menus => Array.isArray(menus.children) ? [menus, ...menus.children] : [menus]),
+        switchMap(pages => from(pages)),
+        pluck('id'),
+        toArray(),
+      )),
+    );
+  }
+
+  private getAvailableMenu$() {
+    return combineLatest(
+      this.availablePageIds$,
+      of(this.permissions),
+    ).pipe(
+      switchMap(([ids, pages]) =>
+        from(pages).pipe(
+          map(page => {
+              const tmp = {...page};
+              tmp.children = (page.children ?? []).filter(p => ids.includes(p.id));
+              if (tmp.children.length === 0 && !tmp.path) {
+                return null;
+              }
+              return tmp;
+            }
+          ),
+          toArray(),
+        ),
+      ),
+      tap(console.log),
     );
   }
 

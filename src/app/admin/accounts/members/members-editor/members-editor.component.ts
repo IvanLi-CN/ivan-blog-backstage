@@ -8,7 +8,6 @@ import {NzMessageService, NzModalService} from 'ng-zorro-antd';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ActiveStatusesService} from '../../../../core/enums/active-statuses.service';
 import {Observable} from 'rxjs';
-import {switchMap, take} from 'rxjs/operators';
 import {MembersService} from '../members.service';
 import {UserLevelsService} from '../user-levels.service';
 
@@ -73,24 +72,14 @@ export class MembersEditorComponent extends BaseEditorComponent<any> implements 
       this.dataForm.controls.confirmPaidPassword.setValue(item.paidPassword);
     });
   }
+
   protected getBaseData(): any {
     const tmp = {...super.getBaseData()};
     tmp.type = UserTypes.player;
     return tmp;
   }
+
   protected fetchOldData(listItem: any): Observable<any> {
     return this.membersService.fetchOne(listItem.id);
   }
-
-  protected onSubmitCreated(data): Observable<any> {
-    return this.membersService.create(data);
-  }
-
-  protected onSubmitModify(data): Observable<any> {
-    return this.oldData$.pipe(
-      take(1),
-      switchMap(oldData => this.membersService.modify(this.getDataId(oldData), data))
-    );
-  }
 }
-

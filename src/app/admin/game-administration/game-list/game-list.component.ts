@@ -41,7 +41,7 @@ export class GameListComponent extends BaseIndexComponent<any, any> implements O
     return this.gameListService.fetchList(conditions).pipe(
       map(dto => ({
         ...dto,
-        rows: dto.rows.map(item => ({
+        records: dto.records.map(item => ({
           ...item,
           imageUrl$: this.commonApiService.getImageBlobUrl(item.imageUrl),
         }))

@@ -7,8 +7,11 @@ import {onError} from 'apollo-link-error';
 import {Router} from '@angular/router';
 import {NzMessageService} from 'ng-zorro-antd';
 import {AppAuthLink} from '../apollo/app-auth-link';
+import * as debug from 'debug';
 
 const uri = 'api/graphql'; // <-- add the URL of the GraphQL server here
+
+const log = debug('ivan:graphql');
 
 
 export function createApollo(httpLink: HttpLink, router: Router, nzMessage: NzMessageService, $injector: Injector) {
@@ -22,9 +25,10 @@ export function createApollo(httpLink: HttpLink, router: Router, nzMessage: NzMe
           router.navigate(['auth/login']).then();
         }
       }
-      graphQLErrors.map(({message, locations, path, extensions}) =>
-        console.log(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+      graphQLErrors.map(error =>
+        log(
+          `error: %O`,
+          error,
         ),
       );
     }

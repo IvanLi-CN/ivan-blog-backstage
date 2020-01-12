@@ -43,7 +43,7 @@ export class PlatformListComponent extends BaseIndexComponent<any, any> implemen
     return this.platformListService.fetchList(conditions).pipe(
       map(dto => ({
         ...dto,
-        rows: dto.rows.map(item => ({
+        records: dto.records.map(item => ({
           ...item,
           imageUrl$: this.commonApiService.getImageBlobUrl(item.imageUrl),
         }))
