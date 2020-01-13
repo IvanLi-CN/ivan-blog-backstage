@@ -34,20 +34,15 @@ export class PermissionsService extends BaseApiService {
       id: '300',
       title: '文章管理',
       icon: 'article',
-      path: '/articles',
       children: [
-        {id: '301', title: '发布文章', path: '/articles/publish'},
-        {id: '302', title: '编辑文章', path: '/articles'},
+        {id: '301', title: '发布文章', path: '/contents/articles/publish'},
+        {id: '302', title: '文章列表', path: '/contents/articles'},
       ]
     }];
   basePermissionIds = [];
   permissionIds4Role = {
     [UserTypes.companyAgent]: ['204', '1003', '1004', '1005', '1007', '1018'],
     [UserTypes.playerAgent]: ['202', '205', '1009', '1018'],
-    [UserTypes.keFu]: ['205', '302', '901', '902', '907', '909', '1022'],
-    [UserTypes.financialStaffDepositGroup]: ['901', '906', '1022'],
-    [UserTypes.financialStaffPaymentGroup]: ['901', '907', '1022'],
-    [UserTypes.financialStaffDirector]: ['901', '903', '904', '905', '906', '907', '909', '1013', '1014', '1022', '902'],
   };
   currentMenuItem: any;
   currentRoleInfo: any;
@@ -143,7 +138,6 @@ export class PermissionsService extends BaseApiService {
           toArray(),
         ),
       ),
-      tap(console.log),
     );
   }
 

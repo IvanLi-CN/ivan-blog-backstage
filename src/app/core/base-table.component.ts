@@ -1,21 +1,8 @@
-import {merge, Observable, of, ReplaySubject, Subject, Subscription, throwError, timer} from 'rxjs';
+import {merge, Observable, of, ReplaySubject, Subject, throwError, timer} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
 import {NzMessageService, NzTableComponent} from 'ng-zorro-antd';
 import {BaseListDto} from './models/base-list.dto';
-import {
-  catchError,
-  debounceTime,
-  filter,
-  map,
-  pluck,
-  share,
-  shareReplay,
-  startWith,
-  switchMap,
-  switchMapTo,
-  takeUntil,
-  tap
-} from 'rxjs/operators';
+import {catchError, debounceTime, filter, map, pluck, share, shareReplay, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {BaseQueryDto} from './models/base-query.dto';
 import {AsyncTaskRequest} from './models/AsyncTaskRequest';
 import {AppException} from './exceptions/app-exception';
@@ -36,12 +23,12 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
   public readonly filterForm = this.fb.group({});
   public readonly filters$: Observable<QueryDtoType>;
   public readonly listDtoSubject: Subject<ListType>;
+  public readonly destroying$: Observable<void>;
+  public readonly destroyed$: Observable<void>;
   private readonly destroyingSubject = new Subject<void>();
   private readonly destroyedSubject = new Subject<void>();
   public readonly listDto$: Observable<ListType>;
   public readonly records$: Observable<ListType[]>;
-  public readonly destroying$: Observable<void>;
-  public readonly destroyed$: Observable<void>;
   isLoading = false;
   records: any[] = [];
   totalCount = 0;

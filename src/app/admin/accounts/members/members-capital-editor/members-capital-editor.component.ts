@@ -7,13 +7,14 @@ import {BaseEditorComponent} from '../../../../core/base-editor.component';
 import {MembersService} from '../members.service';
 import {ActiveStatusesService} from '../../../../core/enums/active-statuses.service';
 import {Observable} from 'rxjs';
+import {BaseModelEditorComponent} from '../../../../core/base-model-editor.component';
 
 @Component({
   selector: 'app-members-capital-editor',
   templateUrl: './members-capital-editor.component.html',
   styleUrls: ['./members-capital-editor.component.scss']
 })
-export class MembersCapitalEditorComponent extends BaseEditorComponent<any> {
+export class MembersCapitalEditorComponent extends BaseModelEditorComponent<any> {
   readonly  modalWidth = '600'
   readonly dataForm = this.fb.group({
     remark: [null],

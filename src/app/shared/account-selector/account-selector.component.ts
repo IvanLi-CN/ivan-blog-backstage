@@ -26,10 +26,6 @@ export class AccountSelectorComponent extends BaseEntityIdSelectorComponent {
     skip,
     nick: keyword,
     types: [
-      UserTypes.financialStaffDirector,
-      UserTypes.financialStaffPaymentGroup,
-      UserTypes.financialStaffDepositGroup,
-      UserTypes.keFu,
       UserTypes.playerAgent,
       UserTypes.companyAgent,
       UserTypes.company,

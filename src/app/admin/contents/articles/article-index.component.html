@@ -2,12 +2,6 @@
   <section class="filter">
     <form nz-form [formGroup]="filterForm" nzLayout="inline" (ngSubmit)="onSubmit($event)"
           (reset)="resetFilter($event)">
-      <nz-form-item>
-        <nz-form-label>游戏类别</nz-form-label>
-        <nz-form-control>
-          <input nz-input formControlName="gameTypeName" placeholder="游戏类别">
-        </nz-form-control>
-      </nz-form-item>
       <nz-form-item class="operations">
         <input type="submit" nz-button nzType="primary" value="查询"/>
         <input type="reset" nz-button value="重置"/>
@@ -15,7 +9,9 @@
     </form>
   </section>
   <section class="operations">
-    <app-game-type-editor [isCreated]="true" (needUpdateList)="refreshList()"></app-game-type-editor>
+    <app-operation-button (doTask)="createArticle($event)" type="primary">发布</app-operation-button>
+    <app-operation-button (doTask)="batchEnable($event)">批量启用</app-operation-button>
+    <app-operation-button (doTask)="batchDisable($event)">批量禁用</app-operation-button>
   </section>
   <section class="index-table">
     <nz-table #indexListTable nzShowSizeChanger [nzData]="records" [nzLoading]="isLoading" [nzTotal]="totalCount"
@@ -23,22 +19,24 @@
               (nzPageIndexChange)="nzPageIndexChange($event)" [nzPageIndex]="pageIndex$ | async"
               nzShowQuickJumper [nzShowTotal]="totalTemplate" [nzPageSize]="pageSize$ | async"
               (nzPageSizeChange)="pageSizeChange($event)">
-      <thead>
+      <thead (nzSortChange)="sort($event)">
       <tr>
-        <th>序号</th>
-        <th>游戏类别名称</th>
-<!--        <th>是否显示在标题栏</th>-->
-        <th>操作</th>
+        <th nzWidth="60px" nzShowCheckbox [nzSelections]="listOfSelection" [(nzChecked)]="isAllChecked"
+            [nzIndeterminate]="isIndeterminate" (nzCheckedChange)="checkAll($event)"></th>
+        <th>标题</th>
+        <th nzWidth="350px">作者</th>
+        <th nzWidth="350px">发布时间</th>
+        <th nzWidth="250px">操作</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let data of indexListTable.data">
-        <td>{{ data.priority }}</td>
-        <td>{{ data.gameTypeName }}</td>
-<!--        <td>{{ data.isDisplayOnTitlebar ? '显示' : '不显示' }}</td>-->
+      <tr *ngFor="let data of tableRecords">
+        <td nzShowCheckbox [nzChecked]="getItemCheck(data)" (nzCheckedChange)="updateItemCheck(data, $event)"></td>
+        <td>{{ data.title }}</td>
+        <td>{{ data.author?.id }}</td>
+        <td>{{ data.publishedAt | amDateFormat: 'L LTS' }}</td>
         <td class="options">
           <app-table-operations>
-            <app-game-type-editor [listItem]="data" (needUpdateList)="refreshList()"></app-game-type-editor>
             <nz-divider nzType="vertical"></nz-divider>
             <app-table-operation-button (doTask)="remove($event, data)" type="delete">删除</app-table-operation-button>
           </app-table-operations>

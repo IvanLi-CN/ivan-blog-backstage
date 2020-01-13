@@ -1,37 +1,46 @@
-import {BehaviorSubject, iif, Observable, of, ReplaySubject, throwError} from 'rxjs';
+import {BehaviorSubject, combineLatest, concat, iif, merge, Observable, of, ReplaySubject, Subject, throwError} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService, NzModalRef, NzModalService} from 'ng-zorro-antd';
-import {catchError, filter, take, tap, timeout} from 'rxjs/operators';
+import {NzMessageService} from 'ng-zorro-antd';
+import {catchError, filter, share, shareReplay, startWith, switchMap, take, takeUntil, tap, timeout} from 'rxjs/operators';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AppException} from './exceptions/app-exception';
-import {AsyncTaskRequest} from './models/AsyncTaskRequest';
-import {EventEmitter, Input, OnDestroy, Output, ViewChild} from '@angular/core';
+import {EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import * as debug from 'debug';
+import {fromPromise} from 'rxjs/internal-compatibility';
 
-export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
-  protected createdModalTitle = '新增';
-  protected modifyModalTitle = '编辑';
-  readonly dataForm = this.fb.group({});
-  readonly oldDataSubject = new ReplaySubject<T>(1);
-  readonly oldData$: Observable<T> = this.oldDataSubject.pipe();
-  isLoading = false;
+const log = debug('ivan:base:editor');
+
+export class BaseEditorComponent<ItemType = any> implements OnInit, OnDestroy {
+  public readonly dataForm = this.fb.group({});
+  public isLoading = false;
   @Output()
-  needUpdateList = new EventEmitter();
-  protected modalWidth = '500px';
-  public modal: NzModalRef<unknown>;
-  protected modalCloseable = false;
-  protected defaultData: T = {} as T;
-  @ViewChild('tplContent', { static: false })
+  public needUpdateList = new EventEmitter();
+  public readonly destroying$: Observable<void>;
+  public readonly destroyed$: Observable<void>;
+  isCreated$: Observable<boolean>;
+  protected readonly oldDataSubject = new ReplaySubject<ItemType>(1);
+  public readonly oldData$: Observable<ItemType> = this.oldDataSubject.pipe();
+  protected defaultData: ItemType = {} as ItemType;
+  @ViewChild('tplContent', {static: false})
   protected readonly tplContent;
-  private listItemSubject = new ReplaySubject<ListItem>(1);
-  listItem$: Observable<ListItem> = this.listItemSubject;
+  private localIsCreated = this.getDefaultIsCreated();
+  private listItemSubject = new ReplaySubject<ItemType>(1);
+  listItem$: Observable<ItemType> = this.listItemSubject;
+  private readonly resetFormSubject = new Subject<void>();
+  private readonly destroyingSubject = new Subject<void>();
+  private readonly destroyedSubject = new Subject<void>();
+  private localListItem: ItemType;
+  private isCreatedSubject = new BehaviorSubject(this.localIsCreated);
 
   constructor(
-    protected fb: FormBuilder,
-    protected message: NzMessageService,
-    public route: ActivatedRoute,
-    public router: Router,
-    public modalService: NzModalService,
+    protected readonly fb: FormBuilder,
+    protected readonly message: NzMessageService,
+    public readonly route: ActivatedRoute,
+    public readonly router: Router,
   ) {
+    this.destroyed$ = this.getDestroyed$();
+    this.destroying$ = this.getDestroying$();
+    this.isCreated$ = this.getIsCreated$();
     this.oldData$.pipe(
       filter(value => !!value),
     ).subscribe(value => {
@@ -39,34 +48,25 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
     });
   }
 
-  // tslint:disable-next-line:variable-name
-  private _listItem: ListItem;
-
-  get listItem(): ListItem {
-    return this._listItem;
+  get listItem(): ItemType {
+    return this.localListItem;
   }
 
   @Input()
-  set listItem(value: ListItem) {
-    this._listItem = value;
+  set listItem(value: ItemType) {
+    this.localListItem = value;
     this.listItemSubject.next(this.listItem);
   }
 
-  // tslint:disable-next-line:variable-name
-  protected _isCreated = false;
-
   get isCreated(): boolean {
-    return this._isCreated;
+    return this.localIsCreated;
   }
 
   @Input()
   set isCreated(value: boolean) {
-    this._isCreated = value;
+    this.localIsCreated = value;
     this.isCreatedSubject.next(this.isCreated);
   }
-
-  private isCreatedSubject = new BehaviorSubject(this._isCreated);
-  isCreated$: Observable<boolean> = this.isCreatedSubject;
 
   public async submitForm($event) {
     $event.preventDefault();
@@ -92,7 +92,7 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
         return;
       }
       iif(
-        () => this._isCreated,
+        () => this.localIsCreated,
         this.onSubmitCreated(this.getCreatedData()).pipe(tap(
           () => this.message.success('添加成功！'),
           (err) => {
@@ -115,8 +115,7 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
         )),
       ).subscribe(value => {
           this.needUpdateList.emit();
-          // tslint:disable-next-line:no-unused-expression
-          this.modal && this.modal.destroy();
+          this.onSubmittedSuccessfully();
           this.resetForm();
           this.isLoading = false;
         },
@@ -126,7 +125,7 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
             Object.keys(error.body.msg).forEach(field => {
               try {
                 if (this.dataForm.controls[field]) {
-                  this.dataForm.controls[field].setErrors({ server: error.body.msg[field].msg });
+                  this.dataForm.controls[field].setErrors({server: error.body.msg[field].msg});
                 }
               } catch (e) {
                 console.warn(field, e);
@@ -141,62 +140,38 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
   }
 
   public async resetForm($event = null) {
-    // tslint:disable-next-line:no-unused-expression
-    $event && $event.preventDefault();
-    this.dataForm.reset(
-      await this.oldData$.pipe(
-        take(1),
-        filter(value => !!value),
-        timeout(100),
-        catchError(() => of(this.defaultData),
-        )
-      ).toPromise());
+    this.resetFormSubject.next();
+  }
+
+  public getDataId(item: ItemType) {
+    return (item as any).id;
+  }
+
+  ngOnDestroy(): void {
+    this.destroyedSubject.next();
+  }
+
+  ngOnInit(): void {
+    this.init();
+  }
+
+  protected resetFormByData(data) {
+    this.dataForm.reset(data);
     for (const key of Object.keys(this.dataForm.controls)) {
       this.dataForm.controls[key].markAsPristine();
       this.dataForm.controls[key].updateValueAndValidity();
     }
-    // tslint:disable-next-line:no-unused-expression
-    this.modal && this.modal.destroy();
   }
 
-  public getDataId(item: T) {
-    return (item as any).id;
+  protected init() {
+    this.watchDestroy();
+    this.fetchDataWhenCreateMode();
+    this.watch4ResetFrom();
   }
 
-  public async openDialog(asyncTaskRequest: AsyncTaskRequest = null, tplContent = this.tplContent) {
-    try {
-      if (!this._isCreated) {
-        const data = await this.fetchOldData(this._listItem).pipe(take(1)).toPromise();
-        this.oldDataSubject.next(data);
-      }
-      this.modal = this.modalService.create({
-        nzTitle: this._isCreated ? this.createdModalTitle : this.modifyModalTitle,
-        nzContent: tplContent,
-        nzFooter: null,
-        nzMaskClosable: true,
-        nzClosable: this.modalCloseable,
-        nzWidth: this.modalWidth,
-      });
-      // tslint:disable-next-line:no-unused-expression
-      asyncTaskRequest && asyncTaskRequest.controlSubject.next({ status: 'success' });
-      // tslint:disable-next-line:no-unused-expression
-      asyncTaskRequest && asyncTaskRequest.controlSubject.complete();
-    } catch (e) {
-      // tslint:disable-next-line:no-unused-expression
-      asyncTaskRequest && asyncTaskRequest.controlSubject.next({ status: 'failed' });
-      // tslint:disable-next-line:no-unused-expression
-      asyncTaskRequest && asyncTaskRequest.controlSubject.error(e);
-    }
-  }
-
-  ngOnDestroy(): void {
-    // tslint:disable-next-line:no-unused-expression
-    this.modal && this.modal.destroy();
-  }
-
-  protected fetchOldData(listItem: ListItem): Observable<T> {
+  protected fetchOldData(listItem?: ItemType): Observable<ItemType> {
     // tslint:disable-next-line:no-console
-    return of({} as T).pipe(tap(() => console.debug('发起查询', listItem)));
+    return of({} as ItemType).pipe(tap(() => console.debug('发起查询', listItem)));
   }
 
   protected getCreatedData() {
@@ -210,14 +185,100 @@ export class BaseEditorComponent<T, ListItem = any> implements OnDestroy {
   }
 
   protected getBaseData() {
-    return { ...this.dataForm.value };
+    return {...this.dataForm.value};
   }
 
-  protected onSubmitCreated(data): Observable<T> {
+  protected onSubmitCreated(data): Observable<ItemType> {
     return throwError(new AppException('onSubmitCreated'));
   }
 
-  protected onSubmitModify(data): Observable<T> {
+  protected onSubmitModify(data): Observable<ItemType> {
     return throwError(new AppException('onSubmitModify'));
+  }
+
+  protected onSubmittedSuccessfully() {
+    log('onSubmittedSuccessfully');
+    return;
+  }
+
+  private watch4ResetFrom() {
+    merge(
+      this.resetFormSubject.pipe(
+        switchMap(() => this.isCreated$.pipe(take(1))),
+      ),
+      this.isCreated$
+    ).pipe(
+      switchMap(isCreated =>
+        iif(
+          () => isCreated,
+          of(this.defaultData),
+          this.oldData$,
+        ),
+      ),
+    ).subscribe(data4Reset => {
+      log('reset form: %o', data4Reset);
+      this.resetFormByData(data4Reset);
+    });
+  }
+
+  private fetchDataWhenCreateMode() {
+    combineLatest(
+      this.isCreated$,
+      this.listItem$.pipe(startWith(null)),
+    ).pipe(
+      switchMap(
+        ([
+           isCreated,
+           listItem,
+         ]) => iif(
+          () => isCreated,
+          concat(
+            iif(() => !!listItem, of(this.listItem)), // backup
+            this.fetchOldData(listItem),
+          ),
+        ),
+      ),
+    ).subscribe(oldData => {
+      log('old data: %o', oldData);
+      // @ts-ignore
+      this.oldDataSubject.next(oldData);
+    });
+  }
+
+  private getDestroying$() {
+    return this.destroyingSubject.pipe(
+      takeUntil(this.destroyed$),
+      share(),
+    );
+  }
+
+  private getDestroyed$() {
+    return this.destroyedSubject.pipe(share());
+  }
+
+  private watchDestroy() {
+    this.destroying$.pipe(
+      takeUntil(this.destroyed$),
+      switchMap(() => fromPromise(this.isAllowDestroy())),
+      filter(value => value),
+    ).subscribe(() => {
+      this.destroyedSubject.next();
+    });
+  }
+
+  private async isAllowDestroy(): Promise<boolean> {
+    log('allow destroy');
+    return true;
+  }
+
+  private getIsCreated$() {
+    return this.isCreatedSubject.pipe(
+      startWith(this.isCreated),
+      shareReplay(1),
+    );
+  }
+
+  protected getDefaultIsCreated() {
+    return false;
   }
 }

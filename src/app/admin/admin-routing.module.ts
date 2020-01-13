@@ -15,6 +15,10 @@ const routes: Routes = [
         loadChildren: () => import('./accounts/accounts.module').then(mod => mod.AccountsModule),
       },
       {
+        path: 'contents',
+        loadChildren: () => import('./contents/contents.module').then(mod => mod.ContentsModule),
+      },
+      {
         path: '**',
         redirectTo: '/'
       }

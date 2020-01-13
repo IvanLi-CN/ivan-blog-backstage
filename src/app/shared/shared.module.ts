@@ -13,7 +13,6 @@ import {SmallImagePreviewComponent} from './small-image-preview/small-image-prev
 import {EnumPreviewComponent} from './enum-perview/enum-preview.component';
 import {ImageUploaderComponent} from './image-uploader/image-uploader.component';
 import {TooltipAmountComponent} from './tooltip-amount/tooltip-amount.component';
-import {PlatformSelectorComponent} from './platform-selector/platform-selector.component';
 import {UserSelectorComponent} from './user-selector/user-selector.component';
 import {Nav2pageDirective} from './nav2page.directive';
 import {UpOrDownIndicatorComponent} from './up-or-down-indicator/up-or-down-indicator.component';
@@ -41,7 +40,6 @@ const COMPONENT = [
   EnumPreviewComponent,
   ImageUploaderComponent,
   TooltipAmountComponent,
-  PlatformSelectorComponent,
   UserSelectorComponent,
   UpOrDownIndicatorComponent,
   SimpleSearchMemberListComponent,

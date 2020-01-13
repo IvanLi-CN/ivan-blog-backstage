@@ -45,8 +45,9 @@ export class AdminComponent implements OnInit, OnDestroy {
     if ('/' + this.route.snapshot._urlSegment.segments.join('/') === item.path) {
       return;
     }
-    console.log(item.path);
-    return this.router.navigate([item.path]);
+    return this.router.navigate([item.path]).then(rt => {
+      console.log(rt, item.path);
+    }).catch(e => console.warn(e));
   }
 
   gotoLogout() {

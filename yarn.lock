@@ -349,6 +349,13 @@
     semver "6.0.0"
     semver-intersect "1.4.0"
 
+"@tinymce/tinymce-angular@^3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@tinymce/tinymce-angular/-/tinymce-angular-3.3.1.tgz#bc0260c72cc6a58ab117c79dbc909bc2c0ba20ad"
+  integrity sha512-a7WyOAQso7RVCllklicE1M9wvNAXrnB+SC4/JTlZvXEy57fH/t3XHT9c4fd0BqlAUsBxDobUmERcWLjc/qhCnA==
+  dependencies:
+    tslib "^1.9.0"
+
 "@types/debug@^4.1.5":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
@@ -395,10 +402,15 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.8.tgz#cb1bf6800238898bc2ff6ffa5702c3cadd350708"
   integrity sha512-FMdVn84tJJdV+xe+53sYiZS4R5yn1mAIxfj+DVoNiQjTYz1+OYmjwEZr1ev9nU0axXwda0QDbYl06QHanRVH3A==
 
-"@types/node@>=6", "@types/node@^13.1.4":
+"@types/node@>=6":
   version "13.1.4"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.1.4.tgz#4cfd90175a200ee9b02bd6b1cd19bc349741607e"
   integrity sha512-Lue/mlp2egZJoHXZr4LndxDAd7i/7SQYhV0EjWfb/a4/OZ6tuVwMCVPiwkU5nsEipxEf7hmkSU7Em5VQ8P5NGA==
+
+"@types/node@^13.1.4":
+  version "13.1.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-13.1.6.tgz#076028d0b0400be8105b89a0a55550c86684ffec"
+  integrity sha512-Jg1F+bmxcpENHP23sVKkNuU3uaxPnsBMW0cLjleiikFKomJQbsn0Cqk2yDvQArqzZN6ABfBkZ0To7pQ8sLdWDg==
 
 "@types/q@^0.0.32":
   version "0.0.32"
@@ -4591,10 +4603,10 @@ neo-async@^2.5.0, neo-async@^2.6.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-ng-zorro-antd@8.1.2:
-  version "8.1.2"
-  resolved "https://registry.yarnpkg.com/ng-zorro-antd/-/ng-zorro-antd-8.1.2.tgz#541a4783bfae2f654ee4f55795c0c07f133558f2"
-  integrity sha512-85oCbVX1Oe6Dv3zkCydAjJ7qr1ToLP/C/NEPem7+3dHf3MLzWHsn1yb6tZg4676qz9X/Oq8H7DfS5laSkSJK6A==
+ng-zorro-antd@^8.5.2:
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/ng-zorro-antd/-/ng-zorro-antd-8.5.2.tgz#575ea85a75df7bfcc8712e82f819b355fade6b2b"
+  integrity sha512-x+QJULyU1IXiAbf/lFPxYC/JUJvBGzU9UXnXSyLnMPZpdtEXodaF/L1N1CpSUr5SimLiHRe/jsVHDWkg0HqfYg==
   dependencies:
     "@angular/cdk" "^8.0.0"
     "@ant-design/icons-angular" "^8.0.2"
@@ -6677,6 +6689,11 @@ tinycolor2@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/tinycolor2/-/tinycolor2-1.4.1.tgz#f4fad333447bc0b07d4dc8e9209d8f39a8ac77e8"
   integrity sha1-9PrTM0R7wLB9TcjpIJ2POaisd+g=
+
+tinymce@^5.1.5:
+  version "5.1.5"
+  resolved "https://registry.yarnpkg.com/tinymce/-/tinymce-5.1.5.tgz#08a4815bcefd33fb5f654b0b82b066f788a8ddf4"
+  integrity sha512-xl7rMhjxtDLWGXJF2ZNGv6Dxqy64HAQKSCvfcbfFuF+oJYRA1JqfNLfgS3yqG4D/V30adFWOZUv9Eng6l5BWOA==
 
 tmp@0.0.30:
   version "0.0.30"

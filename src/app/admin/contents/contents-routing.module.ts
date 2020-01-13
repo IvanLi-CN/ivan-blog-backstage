@@ -1,14 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import {GameListComponent} from './game-list.component';
-
 
 const routes: Routes = [
-  { path: '' , component: GameListComponent},
+  {
+    path: 'articles',
+    loadChildren: () => import('./articles/articles.module').then(m => m.ArticlesModule),
+  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class GameListRoutingModule { }
+export class ContentsRoutingModule { }

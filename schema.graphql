@@ -61,10 +61,11 @@ type Query {
   account(id: Int!): [Account!]!
   accounts(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): [Account!]!
   accountsCount(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
-  count(pageIndex: Int = 1, pageSize: Int = 10, title: String): Int!
+  article(id: Int, slug: String, title: String): Article!
+  articles(isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): [Article!]!
+  articlesCount(isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): Int!
+  count(name: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
   currAccount: AccountInfoDto!
-  getArticle(id: Int, slug: String, title: String): Article!
-  getArticles(pageIndex: Int = 1, pageSize: Int = 10, title: String): [Article!]!
   getTag(id: Int, name: String): Tag!
   getTags(name: String, pageIndex: Int = 1, pageSize: Int = 10): [Tag!]!
 }
