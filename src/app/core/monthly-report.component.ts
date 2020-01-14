@@ -96,8 +96,8 @@ export class MonthlyReportComponent<QueryDtoType extends BaseQueryDto,
     return totalObj;
   }
 
-  protected initialized() {
-    super.initialized();
+  protected initialize() {
+    super.initialize();
     this.getArrDateOfCurrMonth();
     this.getArrDateOfCurrRange();
     this.getArrData4CurrRange();

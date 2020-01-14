@@ -13,16 +13,13 @@ import {SmallImagePreviewComponent} from './small-image-preview/small-image-prev
 import {EnumPreviewComponent} from './enum-perview/enum-preview.component';
 import {ImageUploaderComponent} from './image-uploader/image-uploader.component';
 import {TooltipAmountComponent} from './tooltip-amount/tooltip-amount.component';
-import {UserSelectorComponent} from './user-selector/user-selector.component';
 import {Nav2pageDirective} from './nav2page.directive';
 import {UpOrDownIndicatorComponent} from './up-or-down-indicator/up-or-down-indicator.component';
 import {SimpleSearchMemberListComponent} from './simple-search-member-list/simple-search-member-list.component';
 import {RouterModule} from '@angular/router';
-import {OperatorComponent} from './operator/operator.component';
 import {UploadImagePopoverComponent} from './upload-image-popover/upload-image-popover.component';
 import {TableRemarkViewComponent} from './table-remark-view/table-remark-view.component';
 import {AccountSelectorComponent} from './account-selector/account-selector.component';
-import {UserIdsSelectorComponent} from './user-ids-selector/user-ids-selector.component';
 // 第三方模块
 const THIRDMODULES = [
 ];
@@ -40,14 +37,11 @@ const COMPONENT = [
   EnumPreviewComponent,
   ImageUploaderComponent,
   TooltipAmountComponent,
-  UserSelectorComponent,
   UpOrDownIndicatorComponent,
   SimpleSearchMemberListComponent,
-  OperatorComponent,
   UploadImagePopoverComponent,
   TableRemarkViewComponent,
   AccountSelectorComponent,
-  UserIdsSelectorComponent,
 ];
 
 // 自定义管道

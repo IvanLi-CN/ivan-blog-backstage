@@ -42,7 +42,7 @@ export class BaseModalIndexComponent<
   }
 
   public async openDialog(asyncTaskRequest: AsyncTaskRequest = null, tplContent = this.tplContent) {
-    this.initialized();
+    this.initialize();
     this.modal = this.modalService.create({
       nzTitle: this.modalTitle,
       nzContent: tplContent,

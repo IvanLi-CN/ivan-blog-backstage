@@ -9,24 +9,20 @@ import {AppException} from './exceptions/app-exception';
 import {OnDestroy, OnInit, ViewChild} from '@angular/core';
 import * as debug from 'debug';
 import {sanitize} from 'class-sanitizer';
-import {fromPromise} from 'rxjs/internal-compatibility';
+import {Destroyable} from './destroyable';
 
 const log = debug('ivan:base:table');
 
 export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto,
   ItemType = any,
   ListType extends BaseListDto<ItemType> = BaseListDto<ItemType>,
-  > implements OnInit, OnDestroy {
+  > extends Destroyable implements OnInit, OnDestroy {
   isCollapsed = true;
   @ViewChild('indexListTable', {static: true})
   table: NzTableComponent;
   public readonly filterForm = this.fb.group({});
   public readonly filters$: Observable<QueryDtoType>;
   public readonly listDtoSubject: Subject<ListType>;
-  public readonly destroying$: Observable<void>;
-  public readonly destroyed$: Observable<void>;
-  private readonly destroyingSubject = new Subject<void>();
-  private readonly destroyedSubject = new Subject<void>();
   public readonly listDto$: Observable<ListType>;
   public readonly records$: Observable<ListType[]>;
   isLoading = false;
@@ -76,8 +72,7 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     protected fb: FormBuilder,
     protected message: NzMessageService,
   ) {
-    this.destroyed$ = this.getDestroyed$();
-    this.destroying$ = this.getDestroying$();
+    super();
     this.listDtoSubject = this.getListDtoSubject();
     this.listDto$ = this.listDtoSubject;
     this.filters$ = this.getFilters$();
@@ -103,7 +98,7 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
   }
 
   ngOnInit(): void {
-    this.initialized();
+    this.initialize();
   }
 
   ngOnDestroy(): void {
@@ -368,11 +363,10 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     }
   }
 
-  protected initialized() {
+  protected initialize() {
     this.watch4FetchList();
     this.watch4FilterForm();
     this.watch4Conditions();
-    this.watchDestroy();
   }
 
   protected destroy() {
@@ -380,7 +374,7 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     this.isAllChecked = false;
     this.checkedIdSet = new Set();
     this.filterForm.reset();
-    this.destroyingSubject.next();
+    super.destroy();
   }
 
   protected getFetchListObservable(conditions: QueryDtoType): Observable<ListType> {
@@ -509,28 +503,7 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     });
   }
 
-  private getDestroying$() {
-    return this.destroyingSubject.pipe(
-      takeUntil(this.destroyed$),
-      share(),
-    );
-  }
-
-  private getDestroyed$() {
-    return this.destroyedSubject.pipe(share());
-  }
-
-  private watchDestroy() {
-    this.destroying$.pipe(
-      takeUntil(this.destroyed$),
-      switchMap(() => fromPromise(this.isAllowDestroy())),
-      filter(value => value),
-    ).subscribe(() => {
-      this.destroyedSubject.next();
-    });
-  }
-
-  private async isAllowDestroy(): Promise<boolean> {
+  protected async isAllowDestroy(): Promise<boolean> {
     log('allow destroy');
     return true;
   }
