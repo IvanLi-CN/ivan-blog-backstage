@@ -1,0 +1,32 @@
+<form nz-form [formGroup]="dataForm">
+  <nz-form-item>
+    <nz-form-label [nzRequired]="true">文题</nz-form-label>
+    <nz-form-control>
+      <input nz-input formControlName="title">
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzRequired]="true">条目</nz-form-label>
+    <nz-form-control>
+      <input nz-input formControlName="slug">
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzRequired]="true">作者</nz-form-label>
+    <nz-form-control>
+      <app-account-selector formControlName="authorId"></app-account-selector>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzRequired]="true">发布时间</nz-form-label>
+    <nz-form-control>
+      <nz-date-picker formControlName="publishedAt"></nz-date-picker>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzRequired]="true">可访问性</nz-form-label>
+    <nz-form-control>
+      <nz-switch formControlName="isPublic" nzCheckedChildren="公开" nzUnCheckedChildren="私密"></nz-switch>
+    </nz-form-control>
+  </nz-form-item>
+</form>

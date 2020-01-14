@@ -1,32 +1,23 @@
-import {Input, OnInit, Optional, Self} from '@angular/core';
+import {Input, OnDestroy, OnInit, Optional, Self} from '@angular/core';
 import {ControlValueAccessor, FormControlName, NgControl} from '@angular/forms';
-import {BehaviorSubject, from, iif, merge, Observable, of, ReplaySubject, Subject} from 'rxjs';
-import {debounceTime, distinct, filter, map, mergeScan, switchMap, take, tap, toArray} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, from, iif, Observable, of, ReplaySubject, Subject} from 'rxjs';
+import {debounceTime, distinct, filter, map, mergeScan, startWith, switchMap, take, takeUntil, tap, toArray} from 'rxjs/operators';
 import {BaseEntityIdSelectorOption} from './base-entity-id-selector-option.interface';
+import {Destroyable} from '../../core/destroyable';
 
 
-export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccessor {
+export class BaseEntityIdSelectorComponent<ValueType = number>
+  extends Destroyable
+  implements OnInit, ControlValueAccessor, OnDestroy {
 
   readonly oldDataSubject = new ReplaySubject(1);
   readonly oldData$ = this.oldDataSubject.pipe();
-  get notOptionalIds(): number[] {
-    return this.localNotOptionalIds;
-  }
-
+  readonly ALL: BaseEntityIdSelectorOption = {value: null, label: '全部'};
+  isDisabled = false;
   @Input()
-  set notOptionalIds(value: number[]) {
-    this.localNotOptionalIds = value;
-    this.notOptionalIdsSubject.next(value);
-  }
-
+  isShowTheAllOption = false;
   @Input()
   nzMode: 'default' | 'multiple' | 'tags' = 'default';
-
-  private localNotOptionalIds: number[] = [];
-  private readonly notOptionalIdsSubject = new BehaviorSubject<number[]>([]);
-  readonly notOptionalIds$: Observable<number[]> = this.notOptionalIdsSubject;
-  private readonly valueSubject = new Subject<number|number[]>();
-  readonly value$: Observable<number|number[]> = this.valueSubject;
   readonly pageSize = 10;
   @Input()
   allowClear = true;
@@ -39,32 +30,31 @@ export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccess
   placeholder: string;
   // tslint:disable-next-line:no-input-rename
   @Input('value')
-  val: number| number[];
-  @Input()
-  fetchData: (keyword: string, skip: number, take: number) => Observable<BaseEntityIdSelectorOption[]> = (() => {
-    return of([]);
-  });
-  fetchOldOne: (value: number) => Observable<BaseEntityIdSelectorOption> = (() => {
-    return of();
-  });
-  onChange = ((value: number|number[]) => {
+  val: ValueType | ValueType[];
+  onChange = ((value: ValueType | ValueType[]) => {
   });
   nzFilterOption = (() => true);
   onTouched = (() => {
   });
-
   public loading = false;
+  readonly pageIndexSubject = new BehaviorSubject<number>(0);
+  protected readonly valueSubject = new Subject<ValueType | ValueType[]>();
+  readonly value$: Observable<ValueType | ValueType[]> = this.valueSubject.pipe();
   protected readonly keywordSubject = new Subject<string>();
   readonly keyword$: Observable<string> = this.keywordSubject;
-
-  readonly options$: Observable<BaseEntityIdSelectorOption[]> = merge<BaseEntityIdSelectorOption[], BaseEntityIdSelectorOption[]>(
+  private currSelectedOptionsSubject = new Subject<BaseEntityIdSelectorOption<ValueType>[]>();
+  readonly options$: Observable<BaseEntityIdSelectorOption[]> = combineLatest<BaseEntityIdSelectorOption<ValueType>[]>([
     this.keyword$.pipe(
       debounceTime(200),
       map(keyword => keyword.trim()),
-      tap(() => this.skipSubject.next(0)),
-      switchMap(keyword => this.skipSubject.pipe(
+      tap(() => this.pageIndexSubject.next(1)),
+      switchMap(keyword => this.pageIndexSubject.pipe(
         tap(() => this.loading = true),
-        switchMap(skip => this.fetchData(keyword, skip, this.pageSize)),
+        switchMap(pageIndex => this.fetchData(
+          keyword,
+          pageIndex,
+          this.pageSize),
+        ),
         switchMap(items => from(items)),
         distinct(item => item.value),
         mergeScan((acc, value1) => of([...acc, value1]), []),
@@ -72,52 +62,83 @@ export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccess
       )),
       tap(options => {
         if (!this.allowClear) {
-          this.val = options[0] ? +options[0].value : null;
+          this.val = options[0] ? this.serializedValue(options[0].value) : null;
         }
       }),
       switchMap(options => this.notOptionalIds$.pipe(
         map(ids => options.filter(option => option.value !== ids)),
       )),
     ),
+    this.currSelectedOptionsSubject.pipe(
+      startWith([]),
+    ),
+  ]).pipe(
+    map(([a, b]) => [...a as any, ...b as any]),
+    map(options => {
+      console.log('isShowTheAllOption', this.isShowTheAllOption);
+      if (this.isShowTheAllOption) {
+        return [this.ALL, ...options];
+      }
+      return options;
+    }),
+    switchMap(options => from(options).pipe(
+      filter(v => !!v),
+      distinct(item => item.value),
+      toArray(),
+    )),
+  );
+  private localNotOptionalIds: ValueType[] = [];
+  private readonly notOptionalIdsSubject = new BehaviorSubject<ValueType[]>([]);
+  readonly notOptionalIds$: Observable<ValueType[]> = this.notOptionalIdsSubject;
+
+  constructor(
+    @Optional() @Self() private ngControl: NgControl,
+    @Optional() private controlName: FormControlName,
+  ) {
+    super();
+    if (ngControl) {
+      ngControl.valueAccessor = this;
+    }
     this.value$.pipe(
       switchMap(value => iif(
         () => this.nzMode === 'multiple',
         of(value).pipe(
           filter(v => Array.isArray(v)),
-          switchMap((ids: number[]) => from(ids).pipe(
+          switchMap((ids: ValueType[]) => from(ids).pipe(
             switchMap(id => this.fetchOldOne(id)),
             toArray(),
           )),
         ),
-        this.fetchOldOne(value as number).pipe(
-          tap(console.log),
+        this.fetchOldOne(value as ValueType).pipe(
           toArray(),
         ),
       )),
-      map(option => [option]),
-    )
-  );
+      takeUntil(this.destroyed$),
+    ).subscribe(options => {
+      this.currSelectedOptionsSubject.next(options);
+    });
+  }
 
-  readonly skipSubject = new BehaviorSubject<number>(0);
-  constructor(
-    @Optional() @Self() private ngControl: NgControl,
-    @Optional() private controlName: FormControlName,
-  ) {
-    if (ngControl) {
-      ngControl.valueAccessor = this;
-    }
+  get notOptionalIds(): ValueType[] {
+    return this.localNotOptionalIds;
+  }
+
+  @Input()
+  set notOptionalIds(value: ValueType[]) {
+    this.localNotOptionalIds = value;
+    this.notOptionalIdsSubject.next(value);
   }
 
   get value() {
     return this.val;
   }
 
-  set value(val: number|number[]) {
+  set value(val: ValueType | ValueType[]) {
     if (val) {
       if (Array.isArray(val)) {
-        this.val = val.map(v => +v);
+        this.val = val.map(v => this.serializedValue(v));
       } else {
-        this.val = +val;
+        this.val = this.serializedValue(val);
       }
     } else {
       this.val = null;
@@ -129,10 +150,18 @@ export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccess
     this.onTouched();
   }
 
+  fetchData(keyword: string, pageIndex: number, pageSize: number): Observable<BaseEntityIdSelectorOption<ValueType>[]> {
+    return of([]);
+  }
+
   ngOnInit() {
     setTimeout(() => {
       this.search();
     }, 1000);
+  }
+
+  fetchOldOne(value: ValueType): Observable<BaseEntityIdSelectorOption<ValueType>> {
+    return of();
   }
 
   registerOnChange(fn: any): void {
@@ -144,6 +173,7 @@ export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccess
   }
 
   setDisabledState(isDisabled: boolean): void {
+    this.isDisabled = isDisabled;
   }
 
   writeValue(obj: any): void {
@@ -167,8 +197,19 @@ export class BaseEntityIdSelectorComponent implements OnInit, ControlValueAccess
     if (this.loading) {
       return;
     }
-    this.skipSubject.pipe(take(1)).subscribe(skip => {
-      this.skipSubject.next(skip + this.pageSize);
+    this.pageIndexSubject.pipe(take(1)).subscribe(pageIndex => {
+      this.pageIndexSubject.next(pageIndex++);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy();
+  }
+
+  protected serializedValue(raw: any): ValueType {
+    if (raw === undefined) {
+      return undefined;
+    }
+    return +raw as unknown as ValueType;
   }
 }

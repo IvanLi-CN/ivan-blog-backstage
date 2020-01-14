@@ -1,4 +1,4 @@
-export interface BaseEntityIdSelectorOption {
+export interface BaseEntityIdSelectorOption<ValueType = number> {
   label: string;
-  value: string;
+  value: ValueType;
 }

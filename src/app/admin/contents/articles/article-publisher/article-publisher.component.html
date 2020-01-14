@@ -1,0 +1,18 @@
+<nz-steps [nzCurrent]="currStep">
+  <nz-step (click)="currStep = 0" nzTitle="文章信息" nzDescription="请填写文章基本信息"></nz-step>
+  <nz-step (click)="currStep = 1" nzTitle="正文" nzDescription="请编写或上传文章正文"></nz-step>
+</nz-steps>
+<form nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm()">
+  <section [class.app-hidden]="currStep !== 0">
+    <app-article-info-editor #infoEditor></app-article-info-editor>
+  </section>
+  <section [class.app-hidden]="currStep !== 1">
+    <app-article-content-editor #contentEditor></app-article-content-editor>
+  </section>
+  <footer>
+    <a *ngIf="currStep > 0" nz-button (click)="currStep = 0"><i nz-icon nzType="left"></i>上一步</a>
+    <input *ngIf="currStep === 0" type="reset" nz-button value="重置">
+    <a *ngIf="currStep < 1" nz-button nzType="primary" (click)="currStep = 1">下一步<i nz-icon nzType="right"></i></a>
+    <input *ngIf="currStep === 1" type="submit" nz-button nzType="primary" value="发布">
+  </footer>
+</form>

@@ -27,10 +27,10 @@ export class BaseIndexComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     super(fb, message);
   }
 
-  protected initialized() {
+  protected initialize() {
     this.watch4RouteSubscription = this.watch4Route();
     this.watch4Filter();
-    super.initialized();
+    super.initialize();
   }
 
   private watch4Filter() {
