@@ -62,8 +62,8 @@ type Query {
   accounts(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): [Account!]!
   accountsCount(account: String, isActive: Boolean, nick: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
   article(id: Int, slug: String, title: String): Article!
-  articles(isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): [Article!]!
-  articlesCount(isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): Int!
+  articles(authorId: ID, isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): [Article!]!
+  articlesCount(authorId: ID, isPublic: Boolean, pageIndex: Int = 1, pageSize: Int = 10, slug: String, title: String): Int!
   count(name: String, pageIndex: Int = 1, pageSize: Int = 10): Int!
   currAccount: AccountInfoDto!
   getTag(id: Int, name: String): Tag!
@@ -79,7 +79,9 @@ type Tag {
 }
 
 input CreateArticleInput {
+  authorId: ID!
   htmlContent: String
+  isPublic: Boolean!
   mdContent: String
   publishedAt: DateTime
   slug: String!
@@ -107,7 +109,9 @@ input UpdateAccountInput {
 }
 
 input UpdateArticleInput {
+  authorId: Float!
   htmlContent: String
+  isPublic: Boolean
   mdContent: String
   publishedAt: DateTime
   slug: String!

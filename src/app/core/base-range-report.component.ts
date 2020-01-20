@@ -12,11 +12,14 @@ import Decimal from 'decimal.js';
 import {DateHelperService} from './services/date-helper.service';
 import {MonthlyReportRecordDto} from './models/monthly-report-record.dto';
 import {AppException} from './exceptions/app-exception';
+import * as debug from 'debug';
+
+const log = debug('ivan:base:range-report');
 
 export class BaseRangeReportComponent<QueryDto extends BaseQueryDto = BaseQueryDto,
-  ListItem extends MonthlyReportRecordDto = MonthlyReportRecordDto,
-  ListDto extends BaseListDto<ListItem> = BaseListDto<ListItem>,
-  > extends BaseIndexComponent<QueryDto, ListItem, ListDto> {
+  ItemType extends MonthlyReportRecordDto = MonthlyReportRecordDto,
+  ListType extends BaseListDto<ItemType> = BaseListDto<ItemType>,
+  > extends BaseIndexComponent<QueryDto, ItemType, ListType> {
   readonly defaultConditions = {baseDateRange: [moment().startOf('months').toDate(), moment().endOf('months').toDate()]} as any;
   readonly today$ = timer(0, 5000).pipe(
     mapTo(moment().startOf('days')),
@@ -118,13 +121,13 @@ export class BaseRangeReportComponent<QueryDto extends BaseQueryDto = BaseQueryD
     return item.date;
   }
 
-  protected getFetchListObservable(conditions: QueryDto): Observable<BaseListDto<ListItem>> {
+  protected getFetchListObservable(conditions: QueryDto): Observable<ListType> {
     // tslint:disable-next-line:no-console
     // @ts-ignore
     return of({
       count: 0,
       rows: Array.from({length: 2}, () => ({result: []})),
-    }).pipe(tap(() => console.debug('发起查询', conditions)));
+    }).pipe(tap(() => log('发起查询', conditions)));
   }
 
   private objTotalize(arr: any[]) {

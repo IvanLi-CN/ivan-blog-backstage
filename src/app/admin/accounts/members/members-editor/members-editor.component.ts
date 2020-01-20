@@ -51,7 +51,7 @@ export class MembersEditorComponent extends BaseEditorComponent<any> implements 
     private membersService: MembersService,
     public  userLevelsService: UserLevelsService,
   ) {
-    super(fb, message, route, router, modalService);
+    super(fb, message, route, router);
   }
 
   formatterPercent = (value: number) => `${value} %`;

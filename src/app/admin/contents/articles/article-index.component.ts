@@ -3,7 +3,7 @@ import {BaseIndexComponent} from '../../../core/base-index.component';
 import {Article} from './article.model';
 import {QueryArticlesDto} from './dtos/query-articles.dto';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService} from 'ng-zorro-antd';
+import {NzMessageService, NzThFilterType} from 'ng-zorro-antd';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ArticlesService} from './articles.service';
 import {AsyncTaskRequest} from '../../../core/models/AsyncTaskRequest';
@@ -18,6 +18,13 @@ import {BaseListDto} from '../../../core/models/base-list.dto';
   styleUrls: ['./article-index.component.scss']
 })
 export class ArticleIndexComponent extends BaseIndexComponent<QueryArticlesDto, Article> {
+  filterForm = this.fb.group({
+    title: [null],
+    slug: [null],
+  });
+  optionsOfFilters = {
+    isPublic: [{ text: '公开', value: true }, { text: '私有', value: false }],
+  };
 
   constructor(
     protected fb: FormBuilder,

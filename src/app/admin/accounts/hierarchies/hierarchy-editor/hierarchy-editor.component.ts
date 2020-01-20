@@ -35,7 +35,7 @@ export class HierarchyEditorComponent extends BaseEditorComponent<any> {
     public activeStatusesService: ActiveStatusesService,
     private hierarchiesService: HierarchiesService
   ) {
-    super(fb, message, route, router, modalService);
+    super(fb, message, route, router);
   }
 
   formatterPercent = (value: number) => `${value} %`;

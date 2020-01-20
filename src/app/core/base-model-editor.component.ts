@@ -33,16 +33,10 @@ export class BaseModelEditorComponent<ItemType = any>
     public modalService: NzModalService,
   ) {
     super(fb, message, route, router);
+    this.destroyed$.subscribe(() => {
+      this.modal?.destroy();
+    });
   }
-
-  @Input()
-  set isCreated(value: boolean) {
-    this.localIsCreated = value;
-    this.isCreatedSubject.next(this.isCreated);
-  }
-
-  private isCreatedSubject = new BehaviorSubject(this.localIsCreated);
-  isCreated$: Observable<boolean> = this.isCreatedSubject;
 
   public async submitForm($event) {
     $event.preventDefault();
@@ -68,7 +62,7 @@ export class BaseModelEditorComponent<ItemType = any>
         return;
       }
       iif(
-        () => this.localIsCreated,
+        () => super.isCreated,
         this.onSubmitCreated(this.getCreatedData()).pipe(tap(
           () => this.message.success('添加成功！'),
           (err) => {
@@ -141,12 +135,12 @@ export class BaseModelEditorComponent<ItemType = any>
 
   public async openDialog(asyncTaskRequest: AsyncTaskRequest = null, tplContent = this.tplContent) {
     try {
-      if (!this.localIsCreated) {
-        const data = await this.fetchOldData(this._listItem).pipe(take(1)).toPromise();
+      if (!super.isCreated) {
+        const data = await this.fetchOldData(this.listItem).pipe(take(1)).toPromise();
         this.oldDataSubject.next(data);
       }
       this.modal = this.modalService.create({
-        nzTitle: this.localIsCreated ? this.createdModalTitle : this.modifyModalTitle,
+        nzTitle: super.isCreated ? this.createdModalTitle : this.modifyModalTitle,
         nzContent: tplContent,
         nzFooter: null,
         nzMaskClosable: true,
@@ -163,11 +157,6 @@ export class BaseModelEditorComponent<ItemType = any>
       // tslint:disable-next-line:no-unused-expression
       asyncTaskRequest && asyncTaskRequest.controlSubject.error(e);
     }
-  }
-
-  ngOnDestroy(): void {
-    // tslint:disable-next-line:no-unused-expression
-    this.modal && this.modal.destroy();
   }
 
   protected fetchOldData(listItem: ItemType): Observable<ItemType> {

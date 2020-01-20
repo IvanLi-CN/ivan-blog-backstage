@@ -1,8 +1,8 @@
 import {merge, Observable, of, ReplaySubject, Subject, throwError, timer} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService, NzTableComponent} from 'ng-zorro-antd';
+import {NzMessageService, NzTableComponent, NzThFilterType} from 'ng-zorro-antd';
 import {BaseListDto} from './models/base-list.dto';
-import {catchError, debounceTime, filter, map, pluck, share, shareReplay, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {catchError, debounceTime, filter, map, pluck, shareReplay, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {BaseQueryDto} from './models/base-query.dto';
 import {AsyncTaskRequest} from './models/AsyncTaskRequest';
 import {AppException} from './exceptions/app-exception';
@@ -33,6 +33,7 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
   isAllChecked = false;
   numberOfChecked: number;
   conditions: QueryDtoType = null;
+  optionsOfFilters: Partial<Record<keyof QueryDtoType, NzThFilterType>> = {};
   listOfSelection = [
     {
       text: '全选',
@@ -363,9 +364,16 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     }
   }
 
+  filter(field: string, result: any[] | any) {
+    this.mergeConditions2Filter({
+      [field]: result,
+    });
+  }
+
   protected initialize() {
     this.watch4FetchList();
     this.watch4FilterForm();
+    this.watch4TableFilters();
     this.watch4Conditions();
   }
 
@@ -503,8 +511,19 @@ export class BaseTableComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
     });
   }
 
-  protected async isAllowDestroy(): Promise<boolean> {
-    log('allow destroy');
-    return true;
+  private watch4TableFilters() {
+    this.filters$.pipe(
+    ).subscribe(conditions => {
+      for (const key of Object.keys(this.optionsOfFilters)) {
+        const options: NzThFilterType = this.optionsOfFilters[key];
+        if (conditions.hasOwnProperty(key)) {
+          const value = this.optionsOfFilters[key];
+          const valueArr = Array.isArray(value) ? value : [value];
+          options.forEach(option => option.byDefault = valueArr.includes(option.value));
+        } else {
+          options.forEach(option => option.byDefault = false);
+        }
+      }
+    });
   }
 }

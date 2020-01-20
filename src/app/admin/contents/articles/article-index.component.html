@@ -2,6 +2,18 @@
   <section class="filter">
     <form nz-form [formGroup]="filterForm" nzLayout="inline" (ngSubmit)="onSubmit($event)"
           (reset)="resetFilter($event)">
+      <nz-form-item>
+        <nz-form-label>文题</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="title" >
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>条目</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="slug" >
+        </nz-form-control>
+      </nz-form-item>
       <nz-form-item class="operations">
         <input type="submit" nz-button nzType="primary" value="查询"/>
         <input type="reset" nz-button value="重置"/>
@@ -25,6 +37,8 @@
             [nzIndeterminate]="isIndeterminate" (nzCheckedChange)="checkAll($event)"></th>
         <th>标题</th>
         <th nzWidth="350px">作者</th>
+        <th nzWidth="100px" nzShowFilter [nzFilterMultiple]="false"
+            [nzFilters]="optionsOfFilters.isPublic" (nzFilterChange)="filter('isPublic', $event)">可访问性</th>
         <th nzWidth="350px">发布时间</th>
         <th nzWidth="250px">操作</th>
       </tr>
@@ -33,7 +47,7 @@
       <tr *ngFor="let data of tableRecords">
         <td nzShowCheckbox [nzChecked]="getItemCheck(data)" (nzCheckedChange)="updateItemCheck(data, $event)"></td>
         <td>{{ data.title }}</td>
-        <td>{{ data.author?.id }}</td>
+        <td>{{ data.author?.nick }}</td>
         <td>{{ data.publishedAt | amDateFormat: 'L LTS' }}</td>
         <td class="options">
           <app-table-operations>

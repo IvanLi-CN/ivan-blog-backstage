@@ -33,7 +33,7 @@ export class MemberBlacklistEditorComponent extends BaseEditorComponent<any> imp
     public activeStatusesService: ActiveStatusesService,
     private memberLoginBlacklistService: MemberLoginBlacklistService,
   ) {
-    super(fb, message, route, router, modalService);
+    super(fb, message, route, router);
   }
 
   ngOnInit() {

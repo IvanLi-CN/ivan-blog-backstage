@@ -23,11 +23,17 @@ export class ArticlesService {
           $slug: String,
           $title: String,
           $isPublic: Boolean,
+          $authorId: ID,
+          $pageIndex: Int,
+          $pageSize: Int,
         ) {
           articles(
             slug: $slug,
             title: $title,
             isPublic: $isPublic,
+            authorId: $authorId,
+            pageIndex: $pageIndex,
+            pageSize: $pageSize,
           ) {
             id,
             title,
@@ -35,6 +41,10 @@ export class ArticlesService {
             publishedAt,
             createdAt,
             summary,
+            author {
+              id
+              nick
+            }
             tags {
               id,
               name,
@@ -44,9 +54,11 @@ export class ArticlesService {
             slug: $slug,
             title: $title,
             isPublic: $isPublic,
+            authorId: $authorId,
           ),
         },
-      `
+      `,
+      variables: queryDto,
     }).valueChanges.pipe(
       pluck('data'),
       map(({articles, articlesCount}) => ({
