@@ -12,5 +12,6 @@ export class Article {
   authorId: number;
   publishedAt: Date;
   createdAt: Date;
+  isPublic: boolean;
   // isDelete: boolean;
 }

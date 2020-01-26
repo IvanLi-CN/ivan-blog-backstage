@@ -40,6 +40,7 @@ export class ArticlesService {
             slug,
             publishedAt,
             createdAt,
+            isPublic,
             summary,
             author {
               id

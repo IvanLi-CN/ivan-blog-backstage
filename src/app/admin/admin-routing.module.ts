@@ -18,10 +18,10 @@ const routes: Routes = [
         path: 'contents',
         loadChildren: () => import('./contents/contents.module').then(mod => mod.ContentsModule),
       },
-      {
-        path: '**',
-        redirectTo: '/'
-      }
+      // {
+      //   path: '**',
+      //   redirectTo: '/'
+      // }
     ]
   },
 ];

@@ -1,11 +1,11 @@
 import {combineLatest, Subscription} from 'rxjs';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService, NzTableComponent} from 'ng-zorro-antd';
+import {NzMessageService} from 'ng-zorro-antd';
 import {BaseListDto} from './models/base-list.dto';
 import {debounceTime} from 'rxjs/operators';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BaseQueryDto} from './models/base-query.dto';
-import {OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {OnDestroy, OnInit} from '@angular/core';
 import * as debug from 'debug';
 import {BaseTableComponent} from './base-table.component';
 
@@ -50,6 +50,7 @@ export class BaseIndexComponent<QueryDtoType extends BaseQueryDto = BaseQueryDto
         ).then();
       },
       err => {
+        log('数据筛选条件异常！', err);
         this.message.error('数据筛选条件异常！');
       });
   }

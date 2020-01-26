@@ -8,16 +8,18 @@ import {DateFromNowPipe} from './pipes/date-from-now.pipe';
 import {SafePipe} from './pipes/safe.pipe';
 import {DevicePipe} from './pipes/device.pipe';
 import {GraphQLModule} from './graphql/graphql.module';
-
-const PIPES = [
-  AmountReadablePipe,
-  DateFromNowPipe,
-  SafePipe,
-  DevicePipe
-];
+import { EnumReadablePipe } from './pipes/enum-readable.pipe';
+import { BooleanReadablePipe } from './pipes/boolean-readable.pipe';
 
 @NgModule({
-  declarations: [...PIPES],
+  declarations: [
+    AmountReadablePipe,
+    DateFromNowPipe,
+    SafePipe,
+    DevicePipe,
+    EnumReadablePipe,
+    BooleanReadablePipe
+  ],
   // providers: [
   //   {
   //     provide: HTTP_INTERCEPTORS,
@@ -45,7 +47,12 @@ const PIPES = [
     FormsModule,
     ReactiveFormsModule,
     GraphQLModule,
-    ...PIPES,
+    AmountReadablePipe,
+    DateFromNowPipe,
+    SafePipe,
+    DevicePipe,
+    EnumReadablePipe,
+    BooleanReadablePipe
   ]
 })
 export class CoreModule {

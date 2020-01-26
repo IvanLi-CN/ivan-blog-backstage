@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {BaseIndexComponent} from '../../../core/base-index.component';
 import {Article} from './article.model';
 import {QueryArticlesDto} from './dtos/query-articles.dto';
 import {FormBuilder} from '@angular/forms';
-import {NzMessageService, NzThFilterType} from 'ng-zorro-antd';
+import {NzMessageService} from 'ng-zorro-antd';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ArticlesService} from './articles.service';
 import {AsyncTaskRequest} from '../../../core/models/AsyncTaskRequest';
-import {fromPromise} from 'rxjs/internal-compatibility';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {BaseListDto} from '../../../core/models/base-list.dto';
@@ -53,5 +52,16 @@ export class ArticleIndexComponent extends BaseIndexComponent<QueryArticlesDto, 
       () => $event.controlSubject.next({status: 'success'}),
       () => $event.controlSubject.next({status: 'failed'}),
     );
+  }
+
+  edit({controlSubject}: AsyncTaskRequest, article: Article, part: 'content' | 'info') {
+    this.router.navigate([this.getItemId(article), 'editor', part], {
+      relativeTo: this.route,
+    }).then(() => {
+      controlSubject.next({status: 'success'});
+    }).catch((e) => {
+      console.warn(e);
+      controlSubject.next({status: 'failed'});
+    });
   }
 }

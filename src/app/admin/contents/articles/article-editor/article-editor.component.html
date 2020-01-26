@@ -1,0 +1,12 @@
+<form nz-form [formGroup]="dataForm" (ngSubmit)="submitForm($event)" (reset)="resetForm()">
+  <section *ngIf="part === 'info'">
+    <app-article-info-editor #infoEditor></app-article-info-editor>
+  </section>
+  <section *ngIf="part === 'content'">
+    <app-article-content-editor #contentEditor></app-article-content-editor>
+  </section>
+  <footer>
+    <input type="reset" nz-button value="重置">
+    <input type="submit" nz-button nzType="primary" value="更新">
+  </footer>
+</form>

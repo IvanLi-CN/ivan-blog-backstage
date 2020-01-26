@@ -23,16 +23,6 @@ export class ArticlePublisherComponent extends BaseEditorComponent implements On
   contentEditor: ArticleContentEditorComponent;
   private _InfoEditor: ArticleInfoEditorComponent;
 
-  constructor(
-    protected readonly fb: FormBuilder,
-    protected readonly message: NzMessageService,
-    public readonly route: ActivatedRoute,
-    public readonly router: Router,
-    public readonly articlesService: ArticlesService,
-  ) {
-    super(fb, message, route, router);
-  }
-
   get infoEditor(): ArticleInfoEditorComponent {
     return this._InfoEditor;
   }
@@ -54,6 +44,16 @@ export class ArticlePublisherComponent extends BaseEditorComponent implements On
   set currStep(value: number) {
     this._currStep = value;
     this.currStepSubject.next(value);
+  }
+
+  constructor(
+    protected readonly fb: FormBuilder,
+    protected readonly message: NzMessageService,
+    public readonly route: ActivatedRoute,
+    public readonly router: Router,
+    public readonly articlesService: ArticlesService,
+  ) {
+    super(fb, message, route, router);
   }
 
   ngOnInit(): void {

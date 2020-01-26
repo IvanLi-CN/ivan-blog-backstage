@@ -8,9 +8,10 @@ import { ArticlePublisherComponent } from './article-publisher/article-publisher
 import { ArticleInfoEditorComponent } from './article-info-editor/article-info-editor.component';
 import { ArticleContentEditorComponent } from './article-content-editor/article-content-editor.component';
 import {EditorModule} from '@tinymce/tinymce-angular';
+import { ArticleEditorComponent } from './article-editor/article-editor.component';
 
 @NgModule({
-  declarations: [ArticleIndexComponent, ArticlePublisherComponent, ArticleInfoEditorComponent, ArticleContentEditorComponent],
+  declarations: [ArticleIndexComponent, ArticlePublisherComponent, ArticleInfoEditorComponent, ArticleContentEditorComponent, ArticleEditorComponent],
   imports: [
     CommonModule,
     SharedModule,

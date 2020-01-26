@@ -1,9 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import {BaseEditorComponent} from '../../../../core/base-editor.component';
-import {Article} from '../article.model';
+import {Component} from '@angular/core';
 import {FormBuilder, Validators} from '@angular/forms';
 import {NzMessageService} from 'ng-zorro-antd';
-import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
   selector: 'app-article-content-editor',

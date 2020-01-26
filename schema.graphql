@@ -34,6 +34,7 @@ type Article {
   createdAt: DateTime!
   htmlContent: String!
   id: ID!
+  isPublic: Boolean!
   mdContent: String!
   publishedAt: DateTime!
   slug: String!
