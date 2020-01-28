@@ -147,7 +147,6 @@ export class BaseEntityIdSelectorComponent<ValueType = number>
     this.valueSubject.next(this.value);
 
     this.onChange(val);
-    this.onTouched();
   }
 
   fetchData(keyword: string, pageIndex: number, pageSize: number): Observable<BaseEntityIdSelectorOption<ValueType>[]> {
@@ -191,6 +190,7 @@ export class BaseEntityIdSelectorComponent<ValueType = number>
   }
 
   ngModelChange() {
+    this.onTouched();
   }
 
   fetchMore() {
