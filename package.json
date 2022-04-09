@@ -31,7 +31,7 @@
     "decimal.js": "^10.2.0",
     "graphql": "^14.5.0",
     "graphql-tag": "^2.10.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "ng-zorro-antd": "^8.5.2",
     "ngx-custom-validators": "latest",
     "ngx-moment": "^3.4.0",
